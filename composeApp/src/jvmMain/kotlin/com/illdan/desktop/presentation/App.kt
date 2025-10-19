@@ -1,4 +1,4 @@
-package com.illdan.desktop
+package com.illdan.desktop.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -33,16 +33,6 @@ fun App() {
         ) {
             Button(onClick = { showContent = !showContent }) {
                 Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
             }
         }
     }
