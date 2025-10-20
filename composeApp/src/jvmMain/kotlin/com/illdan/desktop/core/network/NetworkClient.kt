@@ -1,6 +1,8 @@
 package com.illdan.desktop.core.network
 
 import com.illdan.desktop.BuildKonfig
+import com.illdan.desktop.core.network.base.ApiException
+import com.illdan.desktop.core.network.base.ApiResponse
 import com.illdan.desktop.domain.enums.HttpMethod
 import io.ktor.client.call.body
 import io.ktor.client.request.header
@@ -47,7 +49,13 @@ class NetworkClient(
                 }
             }
 
-            Result.success(response.body())
+            val apiResponse: ApiResponse<T> = response.body()
+
+            if (apiResponse.isSuccess && apiResponse.result != null) {
+                Result.success(apiResponse.result)
+            } else {
+                Result.failure(ApiException(apiResponse.code, apiResponse.message))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
