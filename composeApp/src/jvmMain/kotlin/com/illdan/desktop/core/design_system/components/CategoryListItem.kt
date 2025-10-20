@@ -11,25 +11,45 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.svg.SvgDecoder
 import com.illdan.desktop.core.design_system.Gray00
 import com.illdan.desktop.core.design_system.Gray40
 import com.illdan.desktop.core.design_system.Gray50
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.Gray95
 import com.illdan.desktop.domain.enums.AppTextStyle
+import illdandesktop.composeapp.generated.resources.Res
+import illdandesktop.composeapp.generated.resources.ic_today
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun CategoryListItem(
-    icon: Painter,
+    icon: String,
     title: String,
     itemCount: Int,
     isSelected: Boolean = false,
     interactionSource: MutableInteractionSource,
     onClick: () -> Unit = {}
 ) {
+    val context = LocalPlatformContext.current
+    val imageLoader = remember(context) {
+        ImageLoader.Builder(context)
+            .components { add(SvgDecoder.Factory()) }
+            .build()
+    }
+
     Row(
         modifier = Modifier
             .background(if (isSelected) Gray90 else Gray95, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
@@ -38,13 +58,26 @@ fun CategoryListItem(
                 indication = null,
                 interactionSource = interactionSource,
                 onClick = onClick
-            )
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp)
-        )
+        if (icon.isNotBlank()) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(icon)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                imageLoader = imageLoader,
+                modifier = Modifier.size(20.dp)
+            )
+        } else {
+            Image(
+                painter = painterResource(Res.drawable.ic_today),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.width(8.dp))
 
