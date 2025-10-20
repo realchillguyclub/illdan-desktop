@@ -37,6 +37,9 @@ kakao-login = "2.21.7"
 # Lifecycle
 lifecycle = "2.9.4"
 
+# Logging
+kermit = "2.0.8"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -87,6 +90,9 @@ kakao-login                    = { module = "com.kakao.sdk:v2-user", version.ref
 lifecycleViewModel             = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
 lifecycleViewModelCompose      = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycleRuntimeCompose        = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+
+# Logging
+kermit                         = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

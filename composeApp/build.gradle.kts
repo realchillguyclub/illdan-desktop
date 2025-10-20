@@ -54,6 +54,8 @@ kotlin {
             implementation(libs.koinComposeViewModel)
 
             implementation(libs.serialization)
+
+            implementation(libs.kermit)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
