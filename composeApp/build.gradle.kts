@@ -56,6 +56,12 @@ kotlin {
             implementation(libs.serialization)
 
             implementation(libs.kermit)
+
+            implementation(libs.coilNetwork)
+            implementation(libs.coilCompose)
+            implementation(libs.coilSvg)
+
+            implementation(libs.navigation)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
