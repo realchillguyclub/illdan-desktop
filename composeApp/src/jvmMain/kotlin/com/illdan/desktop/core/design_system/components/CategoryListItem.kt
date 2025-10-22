@@ -16,11 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
-import coil3.PlatformContext
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import coil3.disk.DiskCache
-import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
@@ -30,14 +27,15 @@ import com.illdan.desktop.core.design_system.Gray50
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.Gray95
 import com.illdan.desktop.domain.enums.AppTextStyle
+import com.illdan.desktop.domain.model.category.Category
 import illdandesktop.composeapp.generated.resources.Res
+import illdandesktop.composeapp.generated.resources.ic_all
 import illdandesktop.composeapp.generated.resources.ic_today
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun CategoryListItem(
-    icon: String,
-    title: String,
+    category: Category,
     itemCount: Int,
     isSelected: Boolean = false,
     interactionSource: MutableInteractionSource,
@@ -61,10 +59,10 @@ fun CategoryListItem(
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (icon.isNotBlank()) {
+        if (category.imageUrl.isNotBlank()) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(icon)
+                    .data(category.imageUrl)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
@@ -72,8 +70,12 @@ fun CategoryListItem(
                 modifier = Modifier.size(20.dp)
             )
         } else {
-            Image(
+            if (category.id == -1L) Image(
                 painter = painterResource(Res.drawable.ic_today),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            ) else if (category.id == 0L) Image(
+                painter = painterResource(Res.drawable.ic_all),
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
@@ -82,7 +84,7 @@ fun CategoryListItem(
         Spacer(modifier = Modifier.width(8.dp))
 
         AppText(
-            text = title,
+            text = category.name,
             style = AppTextStyle.mdMedium,
             color = if (isSelected) Gray00 else Gray40
         )
