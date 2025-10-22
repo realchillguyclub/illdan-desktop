@@ -1,0 +1,41 @@
+import com.illdan.desktop.domain.enums.TodoStatus;
+import kotlin.Boolean;
+import kotlin.String;
+import kotlin.collections.List;
+
+CREATE TABLE TodoEntity (
+    todoId          INTEGER NOT NULL PRIMARY KEY,
+    content         TEXT NOT NULL,
+    todoStatus      TEXT AS TodoStatus NOT NULL,
+    isBookmark      INTEGER AS Boolean NOT NULL,
+    isRepeat        INTEGER AS Boolean NOT NULL,
+    isRoutine       INTEGER AS Boolean NOT NULL,
+    dDay            INTEGER NOT NULL,
+    time            TEXT NOT NULL,
+    deadline        TEXT NOT NULL,
+    routineDays     TEXT AS List<String> NOT NULL,
+    categoryName    TEXT NOT NULL,
+    imageUrl        TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_TodoEntity_status   ON TodoEntity(todoStatus);
+CREATE INDEX IF NOT EXISTS idx_TodoEntity_bookmark ON TodoEntity(isBookmark);
+
+getAll:
+SELECT * FROM TodoEntity;
+
+getById:
+SELECT * FROM TodoEntity WHERE todoId = ?;
+
+upsert:
+INSERT OR REPLACE INTO TodoEntity(
+  todoId, content, todoStatus, isBookmark, isRepeat,
+  isRoutine, dDay, time, deadline,
+  routineDays, categoryName, imageUrl
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM TodoEntity WHERE todoId = ?;
+
+clear:
+DELETE FROM TodoEntity;
