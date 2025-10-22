@@ -36,7 +36,13 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -68,7 +74,7 @@ fun TodoItem(
     onCheckedChange: (TodoStatus, Long) -> Unit = { _, _ -> },
 ) {
     val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     var textFieldValue by remember {
         mutableStateOf(
             TextFieldValue(
@@ -138,47 +144,87 @@ fun TodoItem(
                 .weight(1f),
             horizontalAlignment = Alignment.Start
         ) {
-            if (isActive) {
-                LaunchedEffect(Unit) {
-                    focusRequester.requestFocus()
-                }
-
-                BasicTextField(
-                    value = textFieldValue,
-                    onValueChange = { newTextFieldValue ->
-                        textFieldValue = newTextFieldValue
-                    },
-                    textStyle = AppTypo().mdRegular.copy(color = Gray00),
-                    modifier = Modifier
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-                            if (focusState.isFocused) {
-                                textFieldValue = textFieldValue.copy(
-                                    selection = TextRange(textFieldValue.text.length)
-                                )
-                            }
-                        },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            keyboardController?.hide()
-                            onClearActiveItem()
-                            if (item.content != textFieldValue.text) onTodoItemModified(item.todoId, textFieldValue.text)
+            BasicTextField(
+                value = textFieldValue,
+                onValueChange = { newTextFieldValue ->
+                    textFieldValue = newTextFieldValue
+                },
+                textStyle = AppTypo().mdRegular.copy(color = Gray00),
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            textFieldValue = textFieldValue.copy(
+                                selection = TextRange(textFieldValue.text.length)
+                            )
                         }
-                    ),
-                    cursorBrush = SolidColor(Gray00)
-                )
-            } else {
-                AppText(
-                    text = item.content,
-                    color = Gray00,
-                    style = AppTextStyle.mdRegular,
-                    modifier = Modifier
-                        .offset(y = 1.5.dp)
-                )
-            }
+                    }
+                    .onPreviewKeyEvent { e ->
+                        val isEnter = e.key == Key.Enter || e.key == Key.NumPadEnter
+                        if (isEnter && e.type == KeyEventType.KeyDown) {
+                            focusManager.clearFocus(force = true)
+                            onClearActiveItem()
+                            if (item.content != textFieldValue.text) {
+                                onTodoItemModified(item.todoId, textFieldValue.text)
+                            }
+                            true
+                        } else if (isEnter && e.type == KeyEventType.KeyUp) {
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                        onClearActiveItem()
+                        if (item.content != textFieldValue.text) onTodoItemModified(item.todoId, textFieldValue.text)
+                    }
+                ),
+                cursorBrush = SolidColor(Gray00)
+            )
+//            if (isActive) {
+//                LaunchedEffect(Unit) {
+//                    focusRequester.requestFocus()
+//                }
+//
+//                BasicTextField(
+//                    value = textFieldValue,
+//                    onValueChange = { newTextFieldValue ->
+//                        textFieldValue = newTextFieldValue
+//                    },
+//                    textStyle = AppTypo().mdRegular.copy(color = Gray00),
+//                    modifier = Modifier
+//                        .focusRequester(focusRequester)
+//                        .onFocusChanged { focusState ->
+//                            if (focusState.isFocused) {
+//                                textFieldValue = textFieldValue.copy(
+//                                    selection = TextRange(textFieldValue.text.length)
+//                                )
+//                            }
+//                        },
+//                    keyboardOptions = KeyboardOptions.Default.copy(
+//                        imeAction = ImeAction.Done
+//                    ),
+//                    keyboardActions = KeyboardActions(
+//                        onDone = {
+//                            keyboardController?.hide()
+//                            onClearActiveItem()
+//                            if (item.content != textFieldValue.text) onTodoItemModified(item.todoId, textFieldValue.text)
+//                        }
+//                    ),
+//                    cursorBrush = SolidColor(Gray00)
+//                )
+//            } else {
+//                AppText(
+//                    text = item.content,
+//                    color = Gray00,
+//                    style = AppTextStyle.mdRegular,
+//                    modifier = Modifier
+//                        .offset(y = 1.5.dp)
+//                )
+//            }
 
             Spacer(modifier = Modifier.height(8.dp))
 //            RepeatDeadlineRow(
