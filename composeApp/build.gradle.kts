@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.buildKonfig)
+    alias(libs.plugins.sqldelight)
 }
 
 extensions.configure<BuildKonfigExtension> {
@@ -57,11 +58,16 @@ kotlin {
 
             implementation(libs.kermit)
 
-            implementation(libs.coilNetwork)
             implementation(libs.coilCompose)
             implementation(libs.coilSvg)
 
             implementation(libs.navigation)
+
+            implementation(libs.coroutines.core)
+
+            implementation(libs.coroutines.extensions)
+
+            implementation(libs.reorderable)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -70,10 +76,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.driver)
         }
     }
 }
-
 
 compose.desktop {
     application {
@@ -83,6 +89,14 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.illdan.desktop"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.illdan.desktop")
         }
     }
 }

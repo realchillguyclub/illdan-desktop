@@ -46,6 +46,15 @@ coil = "3.3.0"
 # Navigation
 navigation = "2.9.0"
 
+# SQLdelight
+sqldelight = "2.1.0"
+
+# Coroutines
+coroutines = "1.10.2"
+
+# DragAndDrop
+reorderable = "3.0.0"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -108,6 +117,18 @@ coilSvg                        = { module = "io.coil-kt.coil3:coil-svg", version
 # Navigation
 navigation                     = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
 
+# SqlDelight
+driver                         = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+
+# Coroutine Extensions
+coroutines-extensions          = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+
+# Coroutines
+coroutines-core                = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+
+# Reorderable
+reorderable                    = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
@@ -115,3 +136,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 buildKonfig             = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 google-services         = { id = "com.google.gms.google-services", version.ref = "google-services" }
+sqldelight              = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
