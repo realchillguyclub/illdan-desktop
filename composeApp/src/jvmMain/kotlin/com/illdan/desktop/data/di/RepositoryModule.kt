@@ -5,5 +5,5 @@ import com.illdan.desktop.domain.repository.TodoRepository
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    single<TodoRepository> { TodoRepositoryImpl(get()) }
+    single<TodoRepository> { TodoRepositoryImpl(get(), get()) }
 }
