@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
@@ -50,6 +52,7 @@ fun CategoryListItem(
 
     Row(
         modifier = Modifier
+            .width(180.dp)
             .background(if (isSelected) Gray90 else Gray95, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
             .padding(horizontal = 16.dp, vertical = 10.dp)
             .clickable(
@@ -86,17 +89,17 @@ fun CategoryListItem(
         AppText(
             text = category.name,
             style = AppTextStyle.mdMedium,
-            color = if (isSelected) Gray00 else Gray40
+            color = if (isSelected) Gray00 else Gray40,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            textAlign = TextAlign.Start,
+            overflow = TextOverflow.Ellipsis
         )
 
-        if (isSelected) {
-            Spacer(modifier = Modifier.width(32.dp))
-
-            AppText(
-                text = "$itemCount",
-                style = AppTextStyle.mdRegular,
-                color = Gray50
-            )
-        }
+        AppText(
+            text = "$itemCount",
+            style = AppTextStyle.mdRegular,
+            color = Gray50
+        )
     }
 }
