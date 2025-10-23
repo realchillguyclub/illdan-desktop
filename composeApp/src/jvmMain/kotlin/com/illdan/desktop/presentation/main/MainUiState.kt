@@ -22,5 +22,7 @@ data class MainUiState(
     val currentCategory: Category = Category(),
     val currentTodoList: List<Todo> = emptyList(),
     val todayList: List<Todo> = emptyList(),
-    val todoList: List<Todo> = emptyList()
+    val todoList: List<Todo> = emptyList(),
+    val isSideBarShrink: Boolean = true,
+    val isMemoShrink: Boolean = true
 ): UiState

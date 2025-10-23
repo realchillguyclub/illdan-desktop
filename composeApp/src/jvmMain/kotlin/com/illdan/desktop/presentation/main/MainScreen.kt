@@ -8,17 +8,21 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -36,6 +40,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
@@ -47,9 +52,14 @@ import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.PLACEHOLDER_TEXT_FILED
 import com.illdan.desktop.core.design_system.components.CategoryListItem
 import com.illdan.desktop.core.design_system.components.RoundedOutlineTextField
+import com.illdan.desktop.core.design_system.components.SideBar
 import com.illdan.desktop.core.design_system.components.TodoItem
+import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
+import illdandesktop.composeapp.generated.resources.Res
+import illdandesktop.composeapp.generated.resources.ic_top_banner
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -67,6 +77,8 @@ fun MainScreen(
         onEnterClicked = viewModel::createTodo,
         onCategoryClicked = viewModel::updateCurrentCategory,
         onMove = { from, to -> viewModel.onMove(from, to) },
+        onShrinkChange = viewModel::toggleSideBarShrink,
+        onCheckedChange = viewModel::updateTodoStatus
     )
 }
 
@@ -77,36 +89,62 @@ private fun MainContent(
     onEnterClicked: (String) -> Unit,
     onCategoryClicked: (Int) -> Unit,
     onMove: (Int, Int) -> Unit,
+    onShrinkChange: () -> Unit,
+    onCheckedChange: (TodoStatus, Long) -> Unit
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(Gray100)
     ) {
-        CategoryList(
-            categoryList = uiState.categoryList,
-            itemCount = uiState.currentTodoList.size,
-            currentCategory = uiState.currentCategory,
-            interactionSource = interactionSource,
-            onCategoryClicked = onCategoryClicked
+        SideBar(
+            isShrink = uiState.isSideBarShrink,
+            onShrinkChange = onShrinkChange
         )
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
                 .weight(1f)
-                .background(Gray90)
-                .padding(horizontal = 20.dp)
-                .padding(top = 16.dp)
+                .fillMaxHeight()
+                .background(Gray100),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextFieldSection(onDone = onEnterClicked)
-
-            Spacer(Modifier.height(28.dp))
-
-            TodoList(
-                todoList = uiState.currentTodoList,
-                onMove = onMove
+            Image(
+                painter = painterResource(Res.drawable.ic_top_banner),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .size(width = 228.dp, height = 21.dp)
             )
+
+            Spacer(Modifier.height(20.dp))
+
+            CategoryList(
+                categoryList = uiState.categoryList,
+                itemCounts = listOf(uiState.todayList.size, uiState.todoList.size),
+                currentCategory = uiState.currentCategory,
+                interactionSource = interactionSource,
+                onCategoryClicked = onCategoryClicked
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(Gray90)
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 16.dp)
+            ) {
+                TextFieldSection(onDone = onEnterClicked)
+
+                Spacer(Modifier.height(28.dp))
+
+                TodoList(
+                    todoList = uiState.currentTodoList,
+                    isToday = uiState.currentCategory.id == -1L,
+                    onMove = onMove,
+                    onCheckedChange = onCheckedChange
+                )
+            }
         }
     }
 }
@@ -114,7 +152,7 @@ private fun MainContent(
 @Composable
 private fun CategoryList(
     categoryList: List<Category>,
-    itemCount: Int,
+    itemCounts: List<Int>,
     currentCategory: Category,
     interactionSource: MutableInteractionSource,
     onCategoryClicked: (Int) -> Unit
@@ -126,7 +164,7 @@ private fun CategoryList(
         itemsIndexed(categoryList, key = { _, item -> item.id }) { index, item ->
             CategoryListItem(
                 category = item,
-                itemCount = itemCount,
+                itemCount = itemCounts[index],
                 isSelected = currentCategory.id == item.id,
                 interactionSource = interactionSource,
                 onClick = { onCategoryClicked(index) }
@@ -138,7 +176,9 @@ private fun CategoryList(
 @Composable
 private fun TodoList(
     todoList: List<Todo>,
+    isToday: Boolean,
     onMove: (Int, Int) -> Unit,
+    onCheckedChange: (TodoStatus, Long) -> Unit
 ) {
     val seenIds = remember { mutableStateListOf<Long>() }
     val headId = todoList.firstOrNull()?.todoId
@@ -188,7 +228,8 @@ private fun TodoList(
                             isActive = false,
                             isDeadlineDateMode = false,
                             modifier = Modifier.fillMaxWidth(),
-                            isToday = true,
+                            isToday = isToday,
+                            onCheckedChange = onCheckedChange
                         )
                     }
                 }

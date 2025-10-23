@@ -1,14 +1,20 @@
 package com.illdan.desktop.presentation.main
 
 import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.ui.base.BaseViewModel
+import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.TodoRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 
 class MainViewModel(
     private val todoRepository: TodoRepository
 ): BaseViewModel<MainUiState>(MainUiState()) {
+    private var logger = Logger.withTag("MainViewModel")
     private var tempId = 1L
 
     init {
@@ -47,6 +53,23 @@ class MainViewModel(
         }
     }
 
+    /**---------------------------------------------할 일 체크----------------------------------------------*/
+    fun updateTodoStatus(currentStatus: TodoStatus, id: Long) {
+        val todo = uiState.value.todayList.firstOrNull { it.todoId == id }
+
+        if (todo == null) return
+
+        val newTodo = todo.copy(todoStatus = if (currentStatus == TodoStatus.INCOMPLETE) TodoStatus.COMPLETED else TodoStatus.INCOMPLETE)
+        val newList = uiState.value.todayList.map { if (it.todoId == id) newTodo else it }
+
+        updateState(
+            uiState.value.copy(
+                todayList = newList,
+                currentTodoList = if (uiState.value.currentCategory.id == -1L) newList else uiState.value.currentTodoList
+            )
+        )
+    }
+
     /**---------------------------------------------할 일 드래그 앤 드롭----------------------------------------------*/
 
     fun onMove(from: Int, to: Int) {
@@ -68,6 +91,11 @@ class MainViewModel(
                 currentTodoList = if (index == 0) uiState.value.todayList else uiState.value.todoList
             )
         )
+    }
+
+    /**---------------------------------------------기타 상태 처리----------------------------------------------*/
+    fun toggleSideBarShrink() {
+        updateState(uiState.value.copy(isSideBarShrink = !uiState.value.isSideBarShrink))
     }
 }
 
