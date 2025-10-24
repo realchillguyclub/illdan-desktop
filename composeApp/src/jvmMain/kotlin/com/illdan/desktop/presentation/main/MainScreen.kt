@@ -5,7 +5,10 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -51,6 +54,7 @@ import com.illdan.desktop.core.design_system.Gray100
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.PLACEHOLDER_TEXT_FILED
 import com.illdan.desktop.core.design_system.components.CategoryListItem
+import com.illdan.desktop.core.design_system.components.MemoBar
 import com.illdan.desktop.core.design_system.components.RoundedOutlineTextField
 import com.illdan.desktop.core.design_system.components.SideBar
 import com.illdan.desktop.core.design_system.components.TodoItem
@@ -78,7 +82,9 @@ fun MainScreen(
         onCategoryClicked = viewModel::updateCurrentCategory,
         onMove = { from, to -> viewModel.onMove(from, to) },
         onShrinkChange = viewModel::toggleSideBarShrink,
-        onCheckedChange = viewModel::updateTodoStatus
+        onCheckedChange = viewModel::updateTodoStatus,
+        onMemoClick = viewModel::toggleMemoShrink,
+        onMemoSubmit = viewModel::createMemo
     )
 }
 
@@ -90,7 +96,9 @@ private fun MainContent(
     onCategoryClicked: (Int) -> Unit,
     onMove: (Int, Int) -> Unit,
     onShrinkChange: () -> Unit,
-    onCheckedChange: (TodoStatus, Long) -> Unit
+    onCheckedChange: (TodoStatus, Long) -> Unit,
+    onMemoClick: () -> Unit,
+    onMemoSubmit: (Pair<String, String>) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -98,8 +106,21 @@ private fun MainContent(
     ) {
         SideBar(
             isShrink = uiState.isSideBarShrink,
-            onShrinkChange = onShrinkChange
+            onShrinkChange = onShrinkChange,
+            onMemoClick = onMemoClick
         )
+
+        AnimatedVisibility(
+            visible = !uiState.isMemoShrink,
+            modifier = Modifier.background(Gray100),
+            enter = fadeIn() + expandHorizontally(),
+            exit = fadeOut() + shrinkHorizontally()
+        ) {
+            MemoBar(
+                memoList = uiState.memoList,
+                onMemoSubmit = onMemoSubmit
+            )
+        }
 
         Column(
             modifier = Modifier

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
+import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.TodoRepository
 import kotlinx.coroutines.async
@@ -93,9 +94,22 @@ class MainViewModel(
         )
     }
 
+    /**---------------------------------------------메모 생성----------------------------------------------*/
+    fun createMemo(input: Pair<String, String>) {
+        val newMemo = Memo(
+            id = tempId++,
+            title = input.first,
+            content = input.second
+        )
+    }
+
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/
     fun toggleSideBarShrink() {
         updateState(uiState.value.copy(isSideBarShrink = !uiState.value.isSideBarShrink))
+    }
+
+    fun toggleMemoShrink() {
+        updateState(uiState.value.copy(isMemoShrink = !uiState.value.isMemoShrink))
     }
 }
 
