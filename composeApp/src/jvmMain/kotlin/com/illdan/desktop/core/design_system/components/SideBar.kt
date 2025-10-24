@@ -45,9 +45,10 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun SideBar(
     isShrink: Boolean,
-    onShrinkChange: () -> Unit
+    onShrinkChange: () -> Unit,
+    onMemoClick: () -> Unit
 ) {
-    var selectedMenu by remember { mutableStateOf(ALL_TODO) }
+    var selectedMenu by remember { mutableStateOf("") }
     val sidebarWidth by animateDpAsState(
         targetValue = if (isShrink) 64.dp else 188.dp,
         label = "sidebarWidth"
@@ -75,7 +76,10 @@ fun SideBar(
             title = WORD_NOTEPAD,
             isSelected = selectedMenu == WORD_NOTEPAD,
             isShrink = isShrink,
-            onClick = { selectedMenu = WORD_NOTEPAD }
+            onClick = {
+                selectedMenu = if (selectedMenu == WORD_NOTEPAD) "" else WORD_NOTEPAD
+                onMemoClick()
+            }
         )
         Spacer(Modifier.weight(1f))
         Image(
