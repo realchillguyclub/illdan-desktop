@@ -136,14 +136,7 @@ private fun MemoExtension(
                     modifier = Modifier.size(24.dp)
                 )
             }
-
-            Button(
-                onClick = {},
-                modifier = Modifier.height(40.dp).weight(1f)
-            ) {
-                Text("메모 생성 버튼튼")
-            }
-//            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
             Image(
                 painter = painterResource(Res.drawable.ic_trash),
                 contentDescription = null,
