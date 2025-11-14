@@ -5,6 +5,7 @@ import com.illdan.desktop.data.di.dataSourceModule
 import com.illdan.desktop.data.di.databaseModule
 import com.illdan.desktop.data.di.driverModule
 import com.illdan.desktop.data.di.repositoryModule
+import com.illdan.desktop.presentation.login.di.loginModule
 import com.illdan.desktop.presentation.main.di.mainModule
 import org.koin.core.context.startKoin
 
@@ -17,7 +18,8 @@ fun initKoin() {
                 dataSourceModule,
                 networkModule,
                 repositoryModule,
-                mainModule
+                mainModule,
+                loginModule
             )
         )
     }
