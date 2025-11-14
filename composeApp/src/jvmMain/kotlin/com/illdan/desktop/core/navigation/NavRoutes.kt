@@ -9,4 +9,8 @@ sealed class NavRoutes(val route: String) {
     // Splash
     data object SplashGraph: NavRoutes("splash/graph")
     data object SplashScreen: NavRoutes("splash/screen")
+
+    // Login
+    data object LoginGraph: NavRoutes("login/graph")
+    data object LoginScreen: NavRoutes("login/screen")
 }
