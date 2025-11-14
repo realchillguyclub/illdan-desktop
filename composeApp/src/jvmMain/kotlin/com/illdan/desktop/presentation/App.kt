@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.illdan.desktop.core.design_system.AppTheme
+import com.illdan.desktop.core.navigation.AppNavHost
 import com.illdan.desktop.core.ui.util.DismissKeyboardOnClick
 import com.illdan.desktop.presentation.main.MainScreen
 import org.jetbrains.compose.resources.painterResource
@@ -27,7 +28,7 @@ import illdandesktop.composeapp.generated.resources.compose_multiplatform
 fun App() {
     AppTheme {
         DismissKeyboardOnClick {
-            MainScreen()
+            AppNavHost()
         }
     }
 }
