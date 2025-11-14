@@ -20,7 +20,7 @@ fun AppNavHost() {
         koin.getAll<NavGraphContributor>().sortedBy { it.priority }
     }
     val start = contributors
-        .firstOrNull { it.graphRoute == NavRoutes.SplashGraph }
+        .firstOrNull { it.graphRoute == NavRoutes.LoginGraph }
         ?: error("해당 Graph를 찾을 수 없습니다.")
     val duration = 300
     val easing = tween<IntOffset>(durationMillis = duration)
