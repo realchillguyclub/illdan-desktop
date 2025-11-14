@@ -14,7 +14,7 @@ object MainNavGraph: NavGraphContributor {
     override val startDestination: String
         get() = NavRoutes.MainScreen.route
     override val priority: Int
-        get() = 0
+        get() = 10
 
     override fun NavGraphBuilder.registerGraph(navController: NavHostController) {
         navigation(
