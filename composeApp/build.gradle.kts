@@ -20,12 +20,24 @@ extensions.configure<BuildKonfigExtension> {
         if (file.exists()) file.inputStream().use { load(it) }
     }
     val baseUrl = props.getProperty("BASE_URL")
+    val kakaoApiKey = props.getProperty("KAKAO_API_KEY")
+    val redirectUri = props.getProperty("REDIRECT_URI")
 
     defaultConfigs {
         buildConfigField(
             Type.STRING,
             "BASE_URL",
             baseUrl
+        )
+        buildConfigField(
+            Type.STRING,
+            "KAKAO_API_KEY",
+            kakaoApiKey
+        )
+        buildConfigField(
+            Type.STRING,
+            "REDIRECT_URI",
+            redirectUri
         )
     }
 }
