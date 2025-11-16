@@ -1,26 +1,29 @@
 package com.illdan.desktop.presentation.login
 
-import com.illdan.desktop.BuildKonfig
+import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.core.ui.base.UiState
 import com.illdan.desktop.core.util.BrowserManager
-import com.illdan.desktop.core.util.RandomIdGenerator
+import com.illdan.desktop.domain.model.auth.AuthUrl
 import com.illdan.desktop.domain.repository.AuthRepository
+import kotlinx.coroutines.launch
 
 class AuthViewModel(
+    private val authRepository: AuthRepository,
 ): BaseViewModel<UiState.Default>(UiState.Default) {
-    private val kakaoApiKey = BuildKonfig.KAKAO_API_KEY
-    private val redirectUri = BuildKonfig.REDIRECT_URI
+    private val logger = Logger.withTag("AuthViewModel")
 
     fun kakaoLogin() {
-        val state = RandomIdGenerator.generateRandomState()
-        val kakaoLoginUrl =
-            "https://kauth.kakao.com/oauth/authorize?" +
-                    "client_id=$kakaoApiKey&" +
-                    "redirect_uri=$redirectUri&" +
-                    "response_type=code&" +
-                    "prompt=login"
+        viewModelScope.launch {
+            authRepository.getAuthUrl().collect {
+                resultResponse(it, ::onSuccessGetAuthUrl)
+            }
+        }
+    }
 
-        BrowserManager.open(kakaoLoginUrl)
+    private fun onSuccessGetAuthUrl(result: AuthUrl) {
+        logger.d { "onSuccessGetAuthUrl: $result" }
+        BrowserManager.open(result.authorizeUrl)
     }
 }
