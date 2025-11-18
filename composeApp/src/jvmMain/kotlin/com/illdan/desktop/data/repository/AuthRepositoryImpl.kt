@@ -2,12 +2,13 @@ package com.illdan.desktop.data.repository
 
 import com.illdan.desktop.core.network.NetworkClient
 import com.illdan.desktop.core.network.base.BaseRepository
+import com.illdan.desktop.data.mapper.AuthInfoResponseMapper
 import com.illdan.desktop.data.mapper.AuthUrlResponseMapper
 import com.illdan.desktop.domain.enums.HttpMethod
+import com.illdan.desktop.domain.model.auth.AuthInfo
 import com.illdan.desktop.domain.model.auth.AuthTokens
 import com.illdan.desktop.domain.model.auth.AuthUrl
 import com.illdan.desktop.domain.model.request.auth.LoginRequest
-import com.illdan.desktop.domain.model.response.auth.AuthInfo
 import com.illdan.desktop.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -25,6 +26,17 @@ class AuthRepositoryImpl(
                 method = HttpMethod.GET,
                 path = "/auth/oauth2/kakao/authorize",
                 mapper = AuthUrlResponseMapper
+            )
+        )
+    }
+
+    override suspend fun getAuthInfo(query: String): Flow<Result<AuthInfo>> = flow {
+        emit(
+            fetchMapped(
+                method = HttpMethod.GET,
+                path = "/auth/oauth2/kakao/desktop/poll",
+                query = mapOf("state" to query),
+                mapper = AuthInfoResponseMapper
             )
         )
     }
