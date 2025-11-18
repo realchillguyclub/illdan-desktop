@@ -4,8 +4,11 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
+import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.memo.Memo
+import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
+import com.illdan.desktop.domain.repository.CategoryRepository
 import com.illdan.desktop.domain.repository.TodoRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -13,13 +16,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
 class MainViewModel(
-    private val todoRepository: TodoRepository
+    private val todoRepository: TodoRepository,
+    private val categoryRepository: CategoryRepository
 ): BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
     private var tempId = 1L
 
     init {
         initCategory()
+        getCategoryList()
+        getTodayList()
     }
 
     private fun initCategory() {
@@ -27,6 +33,52 @@ class MainViewModel(
             uiState.value.copy(
                 currentCategory = uiState.value.categoryList.first(),
                 currentTodoList = uiState.value.todayList
+            )
+        )
+    }
+
+    /**---------------------------------------------카테고리----------------------------------------------*/
+
+    // 카테고리 조회
+    private fun getCategoryList() {
+        logger.d { "getCategoryList" }
+        viewModelScope.launch {
+            categoryRepository.getCategoryList().collect {
+                resultResponse(it, ::onSuccessGetCategoryList)
+            }
+        }
+    }
+
+    private fun onSuccessGetCategoryList(result: List<Category>) {
+        updateState(uiState.value.copy(categoryList = uiState.value.categoryList + result))
+    }
+
+    // 카테고리 선택
+    fun updateCurrentCategory(index: Int) {
+        updateState(
+            uiState.value.copy(
+                currentCategory = uiState.value.categoryList[index],
+                currentTodoList = if (index == 0) uiState.value.todayList else uiState.value.todoList
+            )
+        )
+    }
+
+    /**---------------------------------------------오늘----------------------------------------------*/
+
+    // 오늘 할 일 조회
+    fun getTodayList() {
+        viewModelScope.launch {
+            todoRepository.getTodayList().collect {
+                resultResponse(it, ::onSuccessGetTodayList)
+            }
+        }
+    }
+
+    private fun onSuccessGetTodayList(result: TodayListInfo) {
+        updateState(
+            uiState.value.copy(
+                todayList = result.todays,
+                currentTodoList = result.todays
             )
         )
     }
@@ -84,17 +136,9 @@ class MainViewModel(
         // TODO(서버 통신 로직)
     }
 
-    /**---------------------------------------------카테고리 선택----------------------------------------------*/
-    fun updateCurrentCategory(index: Int) {
-        updateState(
-            uiState.value.copy(
-                currentCategory = uiState.value.categoryList[index],
-                currentTodoList = if (index == 0) uiState.value.todayList else uiState.value.todoList
-            )
-        )
-    }
+    /**---------------------------------------------메모----------------------------------------------*/
 
-    /**---------------------------------------------메모 생성----------------------------------------------*/
+    // 메모 생성
     fun createMemo(input: Pair<String, String>) {
         val newMemo = Memo(
             id = tempId++,
