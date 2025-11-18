@@ -141,7 +141,7 @@ private fun MainContent(
 
             CategoryList(
                 categoryList = uiState.categoryList,
-                itemCounts = listOf(uiState.todayList.size, uiState.todoList.size),
+                itemCounts = listOf(uiState.todayList.size, uiState.todoList.size, 0),
                 currentCategory = uiState.currentCategory,
                 interactionSource = interactionSource,
                 onCategoryClicked = onCategoryClicked
@@ -161,7 +161,7 @@ private fun MainContent(
 
                 TodoList(
                     todoList = uiState.currentTodoList,
-                    isToday = uiState.currentCategory.id == -1L,
+                    isToday = uiState.currentCategory.id == -2L,
                     onMove = onMove,
                     onCheckedChange = onCheckedChange
                 )
