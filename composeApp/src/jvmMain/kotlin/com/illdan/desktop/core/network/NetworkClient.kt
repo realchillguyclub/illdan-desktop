@@ -1,5 +1,6 @@
 package com.illdan.desktop.core.network
 
+import co.touchlab.kermit.Logger
 import com.illdan.desktop.BuildKonfig
 import com.illdan.desktop.core.network.base.ApiException
 import com.illdan.desktop.core.network.base.ApiResponse
@@ -14,8 +15,8 @@ import kotlinx.coroutines.flow.first
 class NetworkClient(
     val dataStore: AppDataStore = AppDataStore
 ) {
+    val logger = Logger.withTag("NetworkClient")
     val httpClient = httpClient()
-
     val baseUrl: String = BuildKonfig.BASE_URL
         .trim()
         .trim('"')
@@ -33,8 +34,9 @@ class NetworkClient(
         isReissue: Boolean = false
     ): Result<T> {
         return try {
-            val tokens = if (addAuthHeader) dataStore.getTokens().first() else null
+            val tokens = if (addAuthHeader) dataStore.getTokensOnce() else null
             val response = httpClient.request(joinUrl(path)) {
+                logger.d { joinUrl(path) }
                 this.method = when (method) {
                     HttpMethod.GET -> io.ktor.http.HttpMethod.Get
                     HttpMethod.POST -> io.ktor.http.HttpMethod.Post
@@ -52,9 +54,8 @@ class NetworkClient(
                 }
 
                 if (addAuthHeader && tokens != null) {
-                    dataStore.getTokens().collect { token ->
-                        header("Authorization", "Bearer ${if (isReissue) tokens.refreshToken else tokens.accessToken}")
-                    }
+                    val value = if (isReissue) tokens.refreshToken else tokens.accessToken
+                    header("Authorization", "Bearer $value")
                 }
             }
 
@@ -66,6 +67,7 @@ class NetworkClient(
                 Result.failure(ApiException(apiResponse.code, apiResponse.message))
             }
         } catch (e: Exception) {
+            logger.e(e) { "request 실패: $method" }
             Result.failure(e)
         }
     }
