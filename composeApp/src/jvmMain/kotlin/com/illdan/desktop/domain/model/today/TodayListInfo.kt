@@ -1,4 +1,4 @@
-package com.illdan.desktop.domain.model.response
+package com.illdan.desktop.domain.model.today
 
 import com.illdan.desktop.domain.model.todo.Todo
 

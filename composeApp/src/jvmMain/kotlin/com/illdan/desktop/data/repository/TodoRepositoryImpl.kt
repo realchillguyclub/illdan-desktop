@@ -5,7 +5,7 @@ import com.illdan.desktop.core.network.base.BaseRepository
 import com.illdan.desktop.data.mapper.TodayListResponseMapper
 import com.illdan.desktop.domain.datasource.TodoLocalDataSource
 import com.illdan.desktop.domain.enums.HttpMethod
-import com.illdan.desktop.domain.model.response.TodayListInfo
+import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.TodoRepository
 import kotlinx.coroutines.flow.Flow
