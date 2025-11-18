@@ -24,7 +24,14 @@ object AuthNavGraph: NavGraphContributor {
         ) {
             composable(NavRoutes.LoginScreen.route) {
                 LoginScreen(
-                    viewModel = koinViewModel()
+                    viewModel = koinViewModel(),
+                    navigateToMainScreen = {
+                        navController.navigate(NavRoutes.MainScreen.route) {
+                            popUpTo(NavRoutes.LoginGraph.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
                 )
             }
         }
