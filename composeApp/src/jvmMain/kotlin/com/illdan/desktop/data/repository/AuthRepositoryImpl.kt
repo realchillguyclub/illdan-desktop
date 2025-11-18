@@ -2,6 +2,7 @@ package com.illdan.desktop.data.repository
 
 import com.illdan.desktop.core.network.NetworkClient
 import com.illdan.desktop.core.network.base.BaseRepository
+import com.illdan.desktop.data.local.datastore.AppDataStore
 import com.illdan.desktop.data.mapper.AuthInfoResponseMapper
 import com.illdan.desktop.data.mapper.AuthUrlResponseMapper
 import com.illdan.desktop.domain.enums.HttpMethod
@@ -41,15 +42,13 @@ class AuthRepositoryImpl(
         )
     }
 
-    override suspend fun saveToken(request: AuthTokens): Flow<Result<Unit>> {
-        TODO("Not yet implemented")
+    override suspend fun saveToken(request: AuthTokens) {
+        AppDataStore.saveTokens(request)
     }
 
-    override suspend fun clearToken(): Flow<Result<Unit>> {
-        TODO("Not yet implemented")
+    override suspend fun clearToken() {
+        AppDataStore.clearTokens()
     }
 
-    override suspend fun getLocalToken(): Flow<AuthTokens> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getLocalToken(): Flow<AuthTokens> = AppDataStore.getTokens()
 }

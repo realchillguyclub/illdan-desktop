@@ -98,6 +98,7 @@ class AuthViewModel(
 
     /** 최종 성공 처리 */
     private fun onSuccessGetAuthInfo(result: AuthInfo) {
+        viewModelScope.launch { authRepository.saveToken(result.authToken) }
         emitEventFlow(AuthEvent.NavigateToMain)
         stopPollingAuthInfo()
         logger.i { "Auth success: $result" }
