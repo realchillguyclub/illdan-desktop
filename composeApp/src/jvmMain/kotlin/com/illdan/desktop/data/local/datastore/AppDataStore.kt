@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import com.illdan.desktop.domain.model.auth.AuthTokens
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.File
 
@@ -48,5 +49,13 @@ object AppDataStore {
                 accessToken = prefs[KEY_ACCESS_TOKEN].orEmpty(),
                 refreshToken = prefs[KEY_REFRESH_TOKEN].orEmpty()
             )
+        }
+
+    suspend fun getTokensOnce(): AuthTokens? =
+        dataStore.data.first().let { prefs ->
+            val access = prefs[KEY_ACCESS_TOKEN]
+            val refresh = prefs[KEY_REFRESH_TOKEN]
+            if (access.isNullOrBlank() || refresh.isNullOrBlank()) null
+            else AuthTokens(access, refresh)
         }
 }
