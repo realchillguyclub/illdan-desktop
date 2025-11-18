@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,9 +27,18 @@ import com.illdan.desktop.domain.enums.AppTextStyle
 
 @Composable
 fun LoginScreen(
-    viewModel: AuthViewModel
+    viewModel: AuthViewModel,
+    navigateToMainScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToMain -> navigateToMainScreen()
+            }
+        }
+    }
 
     LoginContent(
         onLoginClick = viewModel::kakaoLogin
