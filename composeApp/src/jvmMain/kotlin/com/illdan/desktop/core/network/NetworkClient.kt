@@ -15,6 +15,12 @@ class NetworkClient(
     val httpClient = httpClient()
 
     val baseUrl: String = BuildKonfig.BASE_URL
+        .trim()
+        .trim('"')
+        .removeSuffix("/")
+
+    fun joinUrl(path: String): String =
+        "$baseUrl/${path.trimStart('/')}"
 
     suspend inline fun <reified T> request(
         method: HttpMethod,
@@ -25,7 +31,7 @@ class NetworkClient(
         isReissue: Boolean = false
     ): Result<T> {
         return try {
-            val response = httpClient.request("$baseUrl$path") {
+            val response = httpClient.request(joinUrl(path)) {
                 this.method = when (method) {
                     HttpMethod.GET -> io.ktor.http.HttpMethod.Get
                     HttpMethod.POST -> io.ktor.http.HttpMethod.Post
