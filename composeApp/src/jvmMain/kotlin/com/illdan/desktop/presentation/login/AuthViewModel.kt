@@ -8,6 +8,7 @@ import com.illdan.desktop.core.util.BrowserManager
 import com.illdan.desktop.domain.model.auth.AuthInfo
 import com.illdan.desktop.domain.model.auth.AuthUrl
 import com.illdan.desktop.domain.repository.AuthRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
@@ -22,6 +23,20 @@ class AuthViewModel(
     private val logger = Logger.withTag("AuthViewModel")
     private var state = ""
     private var pollingJob: Job? = null
+
+    init {
+        checkForLocalToken()
+    }
+
+    private fun checkForLocalToken() {
+        viewModelScope.launch(Dispatchers.Main) {
+            val tokens = authRepository.getLocalTokenOnce()
+
+            if (tokens != null) {
+                emitEventFlow(AuthEvent.NavigateToMain)
+            }
+        }
+    }
 
     fun kakaoLogin() {
         viewModelScope.launch {
@@ -98,9 +113,11 @@ class AuthViewModel(
 
     /** 최종 성공 처리 */
     private fun onSuccessGetAuthInfo(result: AuthInfo) {
-        viewModelScope.launch { authRepository.saveToken(result.authToken) }
-        emitEventFlow(AuthEvent.NavigateToMain)
-        stopPollingAuthInfo()
-        logger.i { "Auth success: $result" }
+        viewModelScope.launch {
+            authRepository.saveToken(result.authToken)
+            stopPollingAuthInfo()
+            emitEventFlow(AuthEvent.NavigateToMain)
+            logger.i { "Auth success: $result" }
+        }
     }
 }
