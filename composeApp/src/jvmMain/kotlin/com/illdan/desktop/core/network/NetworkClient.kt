@@ -3,14 +3,16 @@ package com.illdan.desktop.core.network
 import com.illdan.desktop.BuildKonfig
 import com.illdan.desktop.core.network.base.ApiException
 import com.illdan.desktop.core.network.base.ApiResponse
+import com.illdan.desktop.data.local.datastore.AppDataStore
 import com.illdan.desktop.domain.enums.HttpMethod
 import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import kotlinx.coroutines.flow.first
 
 class NetworkClient(
-    val tokenProvider: TokenProvider
+    val dataStore: AppDataStore = AppDataStore
 ) {
     val httpClient = httpClient()
 
@@ -31,6 +33,7 @@ class NetworkClient(
         isReissue: Boolean = false
     ): Result<T> {
         return try {
+            val tokens = if (addAuthHeader) dataStore.getTokens().first() else null
             val response = httpClient.request(joinUrl(path)) {
                 this.method = when (method) {
                     HttpMethod.GET -> io.ktor.http.HttpMethod.Get
@@ -48,9 +51,9 @@ class NetworkClient(
                     setBody(body)
                 }
 
-                if (addAuthHeader) {
-                    tokenProvider.getToken()?.let { token ->
-                        header("Authorization", "Bearer ${if (isReissue) token.refreshToken else token.accessToken}")
+                if (addAuthHeader && tokens != null) {
+                    dataStore.getTokens().collect { token ->
+                        header("Authorization", "Bearer ${if (isReissue) tokens.refreshToken else tokens.accessToken}")
                     }
                 }
             }
