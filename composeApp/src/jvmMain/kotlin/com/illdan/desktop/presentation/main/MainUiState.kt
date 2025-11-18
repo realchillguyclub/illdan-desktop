@@ -9,15 +9,9 @@ data class MainUiState(
     val categoryList: List<Category> = listOf(
         Category(
             name = "오늘 할 일",
-            id = -1,
+            id = -2,
             imageUrl = "",
             emojiId = 1
-        ),
-        Category(
-            name = "전체 할 일",
-            id = 0,
-            imageUrl = "",
-            emojiId = 2
         )
     ),
     val currentCategory: Category = Category(),

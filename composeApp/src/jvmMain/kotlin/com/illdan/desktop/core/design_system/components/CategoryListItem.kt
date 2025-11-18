@@ -73,11 +73,11 @@ fun CategoryListItem(
                 modifier = Modifier.size(20.dp)
             )
         } else {
-            if (category.id == -1L) Image(
+            if (category.id == -2L) Image(
                 painter = painterResource(Res.drawable.ic_today),
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
-            ) else if (category.id == 0L) Image(
+            ) else if (category.id == -1L) Image(
                 painter = painterResource(Res.drawable.ic_all),
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
