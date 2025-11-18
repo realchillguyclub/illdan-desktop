@@ -8,7 +8,8 @@ object AuthUrlResponseMapper: Mapper<AuthUrlResponse, AuthUrl> {
     override fun responseToModel(response: AuthUrlResponse?): AuthUrl {
         return response?.let {
             AuthUrl(
-                it.authorizeUrl
+                authorizeUrl = it.authorizeUrl,
+                state = it.state
             )
         } ?: AuthUrl("")
     }

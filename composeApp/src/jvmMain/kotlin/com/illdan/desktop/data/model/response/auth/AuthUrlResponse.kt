@@ -4,5 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AuthUrlResponse(
-    val authorizeUrl: String
+    val authorizeUrl: String,
+    val state: String
 )
