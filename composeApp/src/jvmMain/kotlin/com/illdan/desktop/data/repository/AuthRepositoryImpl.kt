@@ -26,7 +26,8 @@ class AuthRepositoryImpl(
             fetchMapped(
                 method = HttpMethod.GET,
                 path = "/auth/oauth2/kakao/authorize",
-                mapper = AuthUrlResponseMapper
+                mapper = AuthUrlResponseMapper,
+                addAuthHeader = false
             )
         )
     }
@@ -37,7 +38,8 @@ class AuthRepositoryImpl(
                 method = HttpMethod.GET,
                 path = "/auth/oauth2/kakao/desktop/poll",
                 query = mapOf("state" to query),
-                mapper = AuthInfoResponseMapper
+                mapper = AuthInfoResponseMapper,
+                addAuthHeader = false
             )
         )
     }
@@ -51,4 +53,8 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun getLocalToken(): Flow<AuthTokens> = AppDataStore.getTokens()
+
+    override suspend fun getLocalTokenOnce(): AuthTokens? {
+        return AppDataStore.getTokensOnce()
+    }
 }

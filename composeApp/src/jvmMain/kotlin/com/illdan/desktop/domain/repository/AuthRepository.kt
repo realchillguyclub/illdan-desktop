@@ -15,4 +15,5 @@ interface AuthRepository {
     suspend fun saveToken(request: AuthTokens)
     suspend fun clearToken()
     suspend fun getLocalToken(): Flow<AuthTokens>
+    suspend fun getLocalTokenOnce(): AuthTokens?
 }
