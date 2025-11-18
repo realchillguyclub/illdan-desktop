@@ -26,7 +26,7 @@ object AuthNavGraph: NavGraphContributor {
                 LoginScreen(
                     viewModel = koinViewModel(),
                     navigateToMainScreen = {
-                        navController.navigate(NavRoutes.MainScreen.route) {
+                        navController.navigate(NavRoutes.MainGraph.route) {
                             popUpTo(NavRoutes.LoginGraph.route) {
                                 inclusive = true
                             }
