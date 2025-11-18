@@ -58,6 +58,9 @@ reorderable = "3.0.0"
 # LogBack
 logBack = "1.5.6"
 
+# DataStore
+dataStore = "1.1.1"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -135,6 +138,9 @@ reorderable                    = { module = "sh.calvin.reorderable:reorderable",
 
 # LogBack
 logBack                        = { module = "ch.qos.logback:logback-classic", version.ref = "logBack" }
+
+# DataStore
+dataStore                      = { module = "androidx.datastore:datastore-preferences-core", version.ref = "dataStore" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

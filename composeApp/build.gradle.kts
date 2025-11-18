@@ -81,6 +81,8 @@ kotlin {
 
             implementation(libs.kermit)
             implementation(libs.kermit.core)
+
+            implementation(libs.dataStore)
         }
     }
 }
