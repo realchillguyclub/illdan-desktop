@@ -3,6 +3,8 @@ package com.illdan.desktop.core.ui.base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
+import com.illdan.desktop.core.network.base.ApiException
+import com.illdan.desktop.core.util.GlobalEventManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -48,6 +50,10 @@ abstract class BaseViewModel<STATE: UiState>(
                     successCallback.invoke(data)
                 },
                 onFailure = { throwable ->
+                    if (throwable is ApiException && throwable.code == "AUTH-002") {
+                        GlobalEventManager.navigateToLogin()
+                    }
+
                     logger.e { "에러 발생: ${throwable.stackTraceToString()}" }
                     errorCallback?.invoke(throwable)
                 }

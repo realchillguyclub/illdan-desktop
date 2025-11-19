@@ -6,10 +6,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.illdan.desktop.core.util.GlobalEventManager
 import org.koin.compose.getKoin
 
 @Composable
@@ -20,10 +22,16 @@ fun AppNavHost() {
         koin.getAll<NavGraphContributor>().sortedBy { it.priority }
     }
     val start = contributors
-        .firstOrNull { it.graphRoute == NavRoutes.LoginGraph }
+        .firstOrNull { it.graphRoute == NavRoutes.MainGraph }
         ?: error("해당 Graph를 찾을 수 없습니다.")
     val duration = 300
     val easing = tween<IntOffset>(durationMillis = duration)
+
+    LaunchedEffect(Unit) {
+        GlobalEventManager.navigateToLoginScreen.collect {
+            navController.navigate(NavRoutes.LoginGraph.route)
+        }
+    }
 
     NavHost(
         navController = navController,
