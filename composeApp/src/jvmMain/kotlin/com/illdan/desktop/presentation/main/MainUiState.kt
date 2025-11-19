@@ -6,14 +6,13 @@ import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.todo.Todo
 
 data class MainUiState(
-    val categoryList: List<Category> = listOf(
-        Category(
-            name = "오늘 할 일",
-            id = -2,
-            imageUrl = "",
-            emojiId = 1
-        )
+    val todayCategory: Category = Category(
+        name = "오늘 할 일",
+        id = -2,
+        imageUrl = "",
+        emojiId = 1
     ),
+    val categoryList: List<Category> = emptyList(),
     val currentCategory: Category = Category(),
     val currentTodoList: List<Todo> = emptyList(),
     val todayList: List<Todo> = emptyList(),
