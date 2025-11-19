@@ -38,7 +38,6 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun CategoryListItem(
     category: Category,
-    itemCount: Int,
     isSelected: Boolean = false,
     interactionSource: MutableInteractionSource,
     onClick: () -> Unit = {}
@@ -94,12 +93,6 @@ fun CategoryListItem(
             maxLines = 1,
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis
-        )
-
-        AppText(
-            text = "$itemCount",
-            style = AppTextStyle.mdRegular,
-            color = Gray50
         )
     }
 }
