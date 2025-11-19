@@ -80,6 +80,7 @@ fun MainScreen(
         interactionSource = interactionSource,
         onEnterClicked = viewModel::createTodo,
         onCategoryClicked = viewModel::updateCurrentCategory,
+        onTodayClicked = viewModel::getTodayList,
         onMove = { from, to -> viewModel.onMove(from, to) },
         onShrinkChange = viewModel::toggleSideBarShrink,
         onCheckedChange = viewModel::updateTodoStatus,
@@ -94,6 +95,7 @@ private fun MainContent(
     interactionSource: MutableInteractionSource,
     onEnterClicked: (String) -> Unit,
     onCategoryClicked: (Int) -> Unit,
+    onTodayClicked: () -> Unit,
     onMove: (Int, Int) -> Unit,
     onShrinkChange: () -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
@@ -140,11 +142,12 @@ private fun MainContent(
             Spacer(Modifier.height(20.dp))
 
             CategoryList(
+                today = uiState.todayCategory,
                 categoryList = uiState.categoryList,
-                itemCounts = listOf(uiState.todayList.size, uiState.todoList.size, 0),
                 currentCategory = uiState.currentCategory,
                 interactionSource = interactionSource,
-                onCategoryClicked = onCategoryClicked
+                onCategoryClicked = onCategoryClicked,
+                onTodayClicked = onTodayClicked
             )
 
             Column(
@@ -172,20 +175,29 @@ private fun MainContent(
 
 @Composable
 private fun CategoryList(
+    today: Category,
     categoryList: List<Category>,
-    itemCounts: List<Int>,
     currentCategory: Category,
     interactionSource: MutableInteractionSource,
-    onCategoryClicked: (Int) -> Unit
+    onCategoryClicked: (Int) -> Unit,
+    onTodayClicked: () -> Unit
 ) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
     ) {
+        item {
+            CategoryListItem(
+                category = today,
+                isSelected = currentCategory.id == today.id,
+                interactionSource = interactionSource,
+                onClick = { onTodayClicked() }
+            )
+        }
+
         itemsIndexed(categoryList, key = { _, item -> item.id }) { index, item ->
             CategoryListItem(
                 category = item,
-                itemCount = itemCounts[index],
                 isSelected = currentCategory.id == item.id,
                 interactionSource = interactionSource,
                 onClick = { onCategoryClicked(index) }

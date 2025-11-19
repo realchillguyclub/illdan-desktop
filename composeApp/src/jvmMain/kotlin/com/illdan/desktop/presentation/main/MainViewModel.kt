@@ -6,6 +6,7 @@ import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.memo.Memo
+import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.CategoryRepository
@@ -31,7 +32,7 @@ class MainViewModel(
     private fun initCategory() {
         updateState(
             uiState.value.copy(
-                currentCategory = uiState.value.categoryList.first(),
+                currentCategory = uiState.value.todayCategory,
                 currentTodoList = uiState.value.todayList
             )
         )
@@ -50,15 +51,18 @@ class MainViewModel(
     }
 
     private fun onSuccessGetCategoryList(result: List<Category>) {
-        updateState(uiState.value.copy(categoryList = uiState.value.categoryList + result))
+        updateState(uiState.value.copy(categoryList = result))
     }
 
     // 카테고리 선택
     fun updateCurrentCategory(index: Int) {
+        val newCategory = uiState.value.categoryList[index]
+
+        getTodoList(newCategory)
+
         updateState(
             uiState.value.copy(
-                currentCategory = uiState.value.categoryList[index],
-                currentTodoList = if (index == 0) uiState.value.todayList else uiState.value.todoList
+                currentCategory = newCategory
             )
         )
     }
@@ -67,6 +71,8 @@ class MainViewModel(
 
     // 오늘 할 일 조회
     fun getTodayList() {
+        updateState(uiState.value.copy(currentCategory = uiState.value.todayCategory))
+
         viewModelScope.launch {
             todoRepository.getTodayList().collect {
                 resultResponse(it, ::onSuccessGetTodayList)
@@ -81,6 +87,19 @@ class MainViewModel(
                 currentTodoList = result.todays
             )
         )
+    }
+
+    /**---------------------------------------------할 일 조회----------------------------------------------*/
+    private fun getTodoList(category: Category) {
+        viewModelScope.launch {
+            todoRepository.getTodoList(request = GetTodoListRequest(categoryId = category.id)).collect {
+                resultResponse(it, ::onSuccessGetTodoList)
+            }
+        }
+    }
+
+    private fun onSuccessGetTodoList(result: List<Todo>) {
+        updateState(uiState.value.copy(currentTodoList = result))
     }
 
     /**---------------------------------------------할 일 생성----------------------------------------------*/
