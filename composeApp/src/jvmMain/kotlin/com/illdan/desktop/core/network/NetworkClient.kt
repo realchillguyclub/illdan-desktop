@@ -56,6 +56,7 @@ class NetworkClient(
                 if (addAuthHeader && tokens != null) {
                     val value = if (isReissue) tokens.refreshToken else tokens.accessToken
                     header("Authorization", "Bearer $value")
+                    header("X-Mobile-Type", "DESKTOP")
                 }
             }
 
