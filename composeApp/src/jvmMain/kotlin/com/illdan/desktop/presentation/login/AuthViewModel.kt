@@ -24,20 +24,6 @@ class AuthViewModel(
     private var state = ""
     private var pollingJob: Job? = null
 
-    init {
-        checkForLocalToken()
-    }
-
-    private fun checkForLocalToken() {
-        viewModelScope.launch(Dispatchers.Main) {
-            val tokens = authRepository.getLocalTokenOnce()
-
-            if (tokens != null) {
-                emitEventFlow(AuthEvent.NavigateToMain)
-            }
-        }
-    }
-
     fun kakaoLogin() {
         viewModelScope.launch {
             authRepository.getAuthUrl().collect {
