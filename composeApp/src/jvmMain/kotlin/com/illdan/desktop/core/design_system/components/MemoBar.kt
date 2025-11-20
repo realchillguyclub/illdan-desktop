@@ -9,7 +9,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,15 +20,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,7 +51,7 @@ import com.illdan.desktop.core.design_system.PLACEHOLDER_MEMO_TITLE
 import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.model.memo.Memo
 import illdandesktop.composeapp.generated.resources.Res
-import illdandesktop.composeapp.generated.resources.ic_arrow_left
+import illdandesktop.composeapp.generated.resources.ic_left
 import illdandesktop.composeapp.generated.resources.ic_plus
 import illdandesktop.composeapp.generated.resources.ic_trash
 import kotlinx.coroutines.delay
@@ -131,7 +126,7 @@ private fun MemoExtension(
                 modifier = Modifier.size(30.dp)
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.ic_arrow_left),
+                    painter = painterResource(Res.drawable.ic_left),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
