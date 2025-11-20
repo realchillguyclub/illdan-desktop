@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.network.base.ApiException
 import com.illdan.desktop.core.util.GlobalEventManager
+import com.illdan.desktop.domain.error.DomainError
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -50,8 +51,8 @@ abstract class BaseViewModel<STATE: UiState>(
                     successCallback.invoke(data)
                 },
                 onFailure = { throwable ->
-                    if (throwable is ApiException && throwable.code == "AUTH-002") {
-                        GlobalEventManager.navigateToLogin()
+                    when(throwable) {
+                        is DomainError.AuthExpired -> GlobalEventManager.navigateToLogin()
                     }
 
                     logger.e { "에러 발생: ${throwable.stackTraceToString()}" }

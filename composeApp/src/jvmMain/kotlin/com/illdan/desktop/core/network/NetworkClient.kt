@@ -6,11 +6,11 @@ import com.illdan.desktop.core.network.base.ApiException
 import com.illdan.desktop.core.network.base.ApiResponse
 import com.illdan.desktop.data.local.datastore.AppDataStore
 import com.illdan.desktop.domain.enums.HttpMethod
+import com.illdan.desktop.domain.error.DomainError
 import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
-import kotlinx.coroutines.flow.first
 
 class NetworkClient(
     val dataStore: AppDataStore = AppDataStore
@@ -65,11 +65,29 @@ class NetworkClient(
             if (apiResponse.isSuccess && apiResponse.result != null) {
                 Result.success(apiResponse.result)
             } else {
-                Result.failure(ApiException(apiResponse.code, apiResponse.message))
+                val domainError = mapApiErrorToDomain(apiResponse.code, apiResponse.message)
+                logger.e { "request 실패: $method, $domainError" }
+                Result.failure(domainError)
             }
         } catch (e: Exception) {
             logger.e(e) { "request 실패: $method" }
-            Result.failure(e)
+            // Http 타임아웃, IOException과 같은 기타 예외
+            Result.failure(mapThrowableToDomain(e))
         }
     }
+
+    fun mapApiErrorToDomain(code: String?, message: String?): DomainError =
+        when (code) {
+            "AUTH-002" -> DomainError.AuthExpired
+            else -> DomainError.Unknown(
+                e = ApiException(code ?: "UNKNOWN", message ?: "알 수 없는 에러")
+            )
+        }
+
+    fun mapThrowableToDomain(t: Throwable): DomainError =
+        when (t) {
+            is java.io.IOException -> DomainError.Network(t)
+            is DomainError -> t
+            else -> DomainError.Unknown(t)
+        }
 }
