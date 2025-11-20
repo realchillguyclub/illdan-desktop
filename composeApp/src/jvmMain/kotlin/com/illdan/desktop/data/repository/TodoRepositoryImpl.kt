@@ -8,6 +8,7 @@ import com.illdan.desktop.domain.datasource.TodoLocalDataSource
 import com.illdan.desktop.domain.enums.HttpMethod
 import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
+import com.illdan.desktop.domain.model.request.todo.TodoId
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.TodoRepository
@@ -52,6 +53,16 @@ class TodoRepositoryImpl(
             fetch(
                 method = HttpMethod.POST,
                 path = "/backlog",
+                body = request
+            )
+        )
+    }
+
+    override suspend fun swipeTodo(request: TodoId): Flow<Result<Unit>> = flow {
+        emit(
+            fetch(
+                method = HttpMethod.PATCH,
+                path = "/swipe",
                 body = request
             )
         )
