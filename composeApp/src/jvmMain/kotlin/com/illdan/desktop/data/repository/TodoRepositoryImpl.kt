@@ -6,6 +6,7 @@ import com.illdan.desktop.data.mapper.TodayListResponseMapper
 import com.illdan.desktop.data.mapper.TodoListResponseMapper
 import com.illdan.desktop.domain.datasource.TodoLocalDataSource
 import com.illdan.desktop.domain.enums.HttpMethod
+import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
@@ -42,6 +43,16 @@ class TodoRepositoryImpl(
                     "size" to "200"
                 ),
                 mapper = TodoListResponseMapper
+            )
+        )
+    }
+
+    override suspend fun createTodo(request: CreateTodoRequest): Flow<Result<Unit>> = flow {
+        emit(
+            fetch(
+                method = HttpMethod.POST,
+                path = "/backlog",
+                body = request
             )
         )
     }
