@@ -6,6 +6,7 @@ import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.memo.Memo
+import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
@@ -51,6 +52,7 @@ class MainViewModel(
     }
 
     private fun onSuccessGetCategoryList(result: List<Category>) {
+        logger.d { "categoryList: $result" }
         updateState(uiState.value.copy(categoryList = result))
     }
 
@@ -105,24 +107,18 @@ class MainViewModel(
     /**---------------------------------------------할 일 생성----------------------------------------------*/
     fun createTodo(input: String) {
         viewModelScope.launch {
-            val newTodo = Todo(
-                todoId = tempId++,
-                content = input
-            )
-            val isToday = uiState.value.currentCategory.id == -1L
+            val curCategoryId = uiState.value.currentCategory.id
 
-            val newTodoList  = if (isToday) uiState.value.todoList else listOf(newTodo) + uiState.value.todoList
-            val newTodayList = if (isToday) listOf(newTodo) + uiState.value.todayList else uiState.value.todayList
-            val newCurrent   = if (isToday) newTodayList else newTodoList
-
-            updateState(
-                uiState.value.copy(
-                    todoList = newTodoList,
-                    todayList = newTodayList,
-                    currentTodoList = newCurrent
-                )
-            )
+            if (curCategoryId != -2L) {
+                todoRepository.createTodo(request = CreateTodoRequest(content = input, categoryId = curCategoryId)).collect {
+                    resultResponse(it, { onSuccessCreateTodo(uiState.value.currentCategory) })
+                }
+            }
         }
+    }
+
+    private fun onSuccessCreateTodo(category: Category) {
+        getTodoList(category)
     }
 
     /**---------------------------------------------할 일 체크----------------------------------------------*/
