@@ -10,10 +10,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,11 +45,15 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,10 +70,13 @@ import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
 import illdandesktop.composeapp.generated.resources.Res
 import illdandesktop.composeapp.generated.resources.ic_top_banner
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import kotlin.math.roundToInt
 
 @Composable
 fun MainScreen(
@@ -82,6 +92,7 @@ fun MainScreen(
         onCategoryClicked = viewModel::updateCurrentCategory,
         onTodayClicked = viewModel::getTodayList,
         onMove = { from, to -> viewModel.onMove(from, to) },
+        onSwiped = viewModel::swipeTodo,
         onShrinkChange = viewModel::toggleSideBarShrink,
         onCheckedChange = viewModel::updateTodoStatus,
         onMemoClick = viewModel::toggleMemoShrink,
@@ -97,6 +108,7 @@ private fun MainContent(
     onCategoryClicked: (Int) -> Unit,
     onTodayClicked: () -> Unit,
     onMove: (Int, Int) -> Unit,
+    onSwiped: (Long) -> Unit,
     onShrinkChange: () -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onMemoClick: () -> Unit,
@@ -166,6 +178,7 @@ private fun MainContent(
                     todoList = uiState.currentTodoList,
                     isToday = uiState.currentCategory.id == -2L,
                     onMove = onMove,
+                    onSwiped =onSwiped,
                     onCheckedChange = onCheckedChange
                 )
             }
@@ -211,7 +224,8 @@ private fun TodoList(
     todoList: List<Todo>,
     isToday: Boolean,
     onMove: (Int, Int) -> Unit,
-    onCheckedChange: (TodoStatus, Long) -> Unit
+    onCheckedChange: (TodoStatus, Long) -> Unit,
+    onSwiped: (Long) -> Unit
 ) {
     val seenIds = remember { mutableStateListOf<Long>() }
     val headId = todoList.firstOrNull()?.todoId
@@ -219,6 +233,8 @@ private fun TodoList(
     val reorderableLazyListState = rememberReorderableLazyListState(listState) { from, to ->
         onMove(from.index, to.index)
     }
+    val scope = rememberCoroutineScope()
+    val swipeAnimDuration = 220
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
@@ -236,14 +252,17 @@ private fun TodoList(
                 enter = if (isNew)
                     slideInVertically(initialOffsetY = { -it / 2 }) + fadeIn(tween(220))
                 else EnterTransition.None,
-                exit = ExitTransition.None,
+                exit = slideOutHorizontally(
+                    targetOffsetX = { fullWidth ->
+                        if (isToday) fullWidth else -fullWidth
+                    },
+                    animationSpec = tween(swipeAnimDuration)
+                ) + fadeOut(tween(swipeAnimDuration))
             ) {
                 ReorderableItem(
                     reorderableLazyListState,
                     key = item.todoId
                 ) { isDragging ->
-                    var offsetX by remember { mutableFloatStateOf(0f) }
-
                     Box(
                         modifier = Modifier
                             .longPressDraggableHandle()
@@ -262,7 +281,14 @@ private fun TodoList(
                             isDeadlineDateMode = false,
                             modifier = Modifier.fillMaxWidth(),
                             isToday = isToday,
-                            onCheckedChange = onCheckedChange
+                            onCheckedChange = onCheckedChange,
+                            onSwiped = {
+                                scope.launch {
+                                    visibleState.targetState = false
+                                    delay(swipeAnimDuration.toLong())
+                                    onSwiped(it)
+                                }
+                            }
                         )
                     }
                 }

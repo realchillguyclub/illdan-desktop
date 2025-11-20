@@ -8,6 +8,7 @@ import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
+import com.illdan.desktop.domain.model.request.todo.TodoId
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.CategoryRepository
@@ -119,6 +120,28 @@ class MainViewModel(
 
     private fun onSuccessCreateTodo(category: Category) {
         getTodoList(category)
+    }
+
+    /**---------------------------------------------할 일 생성----------------------------------------------*/
+    fun swipeTodo(todoId: Long) {
+        val newList = uiState.value.currentTodoList.filter { it.todoId != todoId }
+        updateState(uiState.value.copy(currentTodoList = newList))
+
+        viewModelScope.launch {
+            todoRepository.swipeTodo(request = TodoId(todoId)).collect {
+                resultResponse(it, ::onSuccessSwipeTodo)
+            }
+        }
+    }
+
+    private fun onSuccessSwipeTodo(result: Unit) {
+        val category = uiState.value.currentCategory
+
+        if (category.id == -2L) {
+            getTodoList(category)
+        } else {
+            getTodayList()
+        }
     }
 
     /**---------------------------------------------할 일 체크----------------------------------------------*/
