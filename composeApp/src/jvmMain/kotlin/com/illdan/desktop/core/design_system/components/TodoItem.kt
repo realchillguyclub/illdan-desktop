@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -57,6 +58,8 @@ import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.todo.Todo
 import illdandesktop.composeapp.generated.resources.Res
+import illdandesktop.composeapp.generated.resources.ic_arrow_left
+import illdandesktop.composeapp.generated.resources.ic_arrow_right
 import illdandesktop.composeapp.generated.resources.ic_three_dot
 import kotlinx.coroutines.flow.filter
 import org.jetbrains.compose.resources.painterResource
@@ -72,6 +75,7 @@ fun TodoItem(
     onClearActiveItem: () -> Unit = {},
     onTodoItemModified: (Long, String) -> Unit = { _, _ -> },
     onCheckedChange: (TodoStatus, Long) -> Unit = { _, _ -> },
+    onSwiped: (Long) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -136,8 +140,15 @@ fun TodoItem(
                     onCheckedChange(item.todoStatus, item.todoId)
                 }
             )
-            Spacer(modifier = Modifier.width(12.dp))
+        } else {
+            Image(
+                painter = painterResource(Res.drawable.ic_arrow_left),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onSwiped(item.todoId) }
+            )
         }
+
+        Spacer(modifier = Modifier.width(12.dp))
 
         Column(
             modifier = Modifier
@@ -236,6 +247,14 @@ fun TodoItem(
 //                Spacer(modifier = Modifier.height(8.dp))
 //                BookmarkTimeCategoryItem(item)
 //            }
+        }
+
+        if (isToday) {
+            Image(
+                painter = painterResource(Res.drawable.ic_arrow_right),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onSwiped(item.todoId) }
+            )
         }
 
         Spacer(modifier = Modifier.width(12.dp))
