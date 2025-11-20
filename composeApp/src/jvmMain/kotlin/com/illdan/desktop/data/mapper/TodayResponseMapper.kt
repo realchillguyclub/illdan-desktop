@@ -14,12 +14,12 @@ object TodayResponseMapper: Mapper<TodayResponse, Todo> {
                 isBookmark = it.isBookmark,
                 isRepeat = it.isRepeat,
                 isRoutine = it.isRoutine,
-                dDay = it.dDay,
-                time = it.time,
-                deadline = it.deadline,
-                routineDays = it.routineDays,
-                categoryName = it.categoryName,
-                imageUrl = it.imageUrl
+                dDay = it.dDay ?: 0,
+                time = it.time ?: "",
+                deadline = it.deadline ?: "",
+                routineDays = it.routineDays ?: emptyList(),
+                categoryName = it.categoryName ?: "",
+                imageUrl = it.imageUrl ?: ""
             )
         } ?: Todo()
     }
