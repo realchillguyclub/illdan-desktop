@@ -22,7 +22,16 @@ object MainNavGraph: NavGraphContributor {
             startDestination = startDestination
         ) {
             composable(NavRoutes.MainScreen.route) {
-                MainScreen()
+                MainScreen(
+                    navigateToLoginScreen = {
+                        navController.navigate(NavRoutes.LoginScreen.route) {
+                            popUpTo(NavRoutes.MainGraph.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
         }
     }

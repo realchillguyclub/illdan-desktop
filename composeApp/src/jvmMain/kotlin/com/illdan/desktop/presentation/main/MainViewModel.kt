@@ -11,14 +11,17 @@ import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.TodoId
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
+import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
 import com.illdan.desktop.domain.repository.TodoRepository
+import com.illdan.desktop.presentation.login.AuthEvent
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
 class MainViewModel(
+    private val authRepository: AuthRepository,
     private val todoRepository: TodoRepository,
     private val categoryRepository: CategoryRepository
 ): BaseViewModel<MainUiState>(MainUiState()) {
@@ -26,9 +29,18 @@ class MainViewModel(
     private var tempId = 1L
 
     init {
+        checkForFirstOpen()
         initCategory()
         getCategoryList()
         getTodayList()
+    }
+
+    private fun checkForFirstOpen() {
+        viewModelScope.launch {
+            val token = authRepository.getLocalTokenOnce()
+
+            if (token == null) emitEventFlow(MainEvent.NavigateToLogin)
+        }
     }
 
     private fun initCategory() {

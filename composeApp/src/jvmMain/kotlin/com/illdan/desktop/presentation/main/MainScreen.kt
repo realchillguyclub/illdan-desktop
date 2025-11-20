@@ -80,10 +80,19 @@ import kotlin.math.roundToInt
 
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel = koinViewModel()
+    viewModel: MainViewModel = koinViewModel(),
+    navigateToLoginScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val interactionSource = remember { MutableInteractionSource() }
+
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collect { event ->
+            when(event) {
+                is MainEvent.NavigateToLogin -> navigateToLoginScreen()
+            }
+        }
+    }
 
     MainContent(
         uiState = uiState,
