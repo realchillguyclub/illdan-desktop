@@ -95,6 +95,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.illdan.desktop"
             packageVersion = "1.0.0"
+            modules("java.sql")
         }
     }
 }
