@@ -32,6 +32,7 @@ import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.model.category.Category
 import illdandesktop.composeapp.generated.resources.Res
 import illdandesktop.composeapp.generated.resources.ic_all
+import illdandesktop.composeapp.generated.resources.ic_star
 import illdandesktop.composeapp.generated.resources.ic_today
 import org.jetbrains.compose.resources.painterResource
 
@@ -61,24 +62,29 @@ fun CategoryListItem(
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (category.imageUrl.isNotBlank()) {
-            AsyncImage(
+        when (category.id) {
+            -2L -> Image(
+                painter = painterResource(Res.drawable.ic_today),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            -1L -> Image(
+                painter = painterResource(Res.drawable.ic_all),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            0L -> Image(
+                painter = painterResource(Res.drawable.ic_star),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            else -> AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(category.imageUrl)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
                 imageLoader = imageLoader,
-                modifier = Modifier.size(20.dp)
-            )
-        } else {
-            if (category.id == -2L) Image(
-                painter = painterResource(Res.drawable.ic_today),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            ) else if (category.id == -1L) Image(
-                painter = painterResource(Res.drawable.ic_all),
-                contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
         }
