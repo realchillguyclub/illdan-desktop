@@ -62,8 +62,9 @@ class NetworkClient(
 
             val apiResponse: ApiResponse<T> = response.body()
 
-            if (apiResponse.isSuccess && apiResponse.result != null) {
-                Result.success(apiResponse.result)
+            if (apiResponse.isSuccess) {
+                val value: T = apiResponse.result ?: (Unit as T)
+                Result.success(value)
             } else {
                 val domainError = mapApiErrorToDomain(apiResponse.code, apiResponse.message)
                 logger.e { "request 실패: $method, $domainError" }
