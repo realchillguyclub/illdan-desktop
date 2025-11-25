@@ -165,12 +165,22 @@ class MainViewModel(
         if (todo == null) return
 
         val newTodo = todo.copy(todoStatus = if (currentStatus == TodoStatus.INCOMPLETE) TodoStatus.COMPLETED else TodoStatus.INCOMPLETE)
-        val newList = uiState.value.todayList.map { if (it.todoId == id) newTodo else it }
+        val remainingItems = uiState.value.todayList.filter { it.todoId != id }
+        val incompleteItems = remainingItems.filter { it.todoStatus == TodoStatus.INCOMPLETE }.toMutableList()
+        val completeItems = remainingItems.filter { it.todoStatus == TodoStatus.COMPLETED }.toMutableList()
+
+        if (newTodo.todoStatus == TodoStatus.COMPLETED) {
+            completeItems.add(newTodo)
+        } else {
+            incompleteItems.add(newTodo)
+        }
+
+        val newList = incompleteItems + completeItems
 
         updateState(
             uiState.value.copy(
                 todayList = newList,
-                currentTodoList = if (uiState.value.currentCategory.id == -1L) newList else uiState.value.currentTodoList
+                currentTodoList = if (uiState.value.currentCategory.id == -2L) newList else uiState.value.currentTodoList
             )
         )
     }

@@ -14,5 +14,6 @@ interface TodoRepository {
     suspend fun createTodo(request: CreateTodoRequest): Flow<Result<Unit>>
     suspend fun swipeTodo(request: TodoId): Flow<Result<Unit>>
     suspend fun reorderTodoList(request: ReorderTodoListRequest): Flow<Result<Unit>>
+    suspend fun updateTodoStatus(todoId: Long): Flow<Result<Unit>>
     suspend fun createLocalTodo(todo: Todo): Flow<Result<Unit>>
 }

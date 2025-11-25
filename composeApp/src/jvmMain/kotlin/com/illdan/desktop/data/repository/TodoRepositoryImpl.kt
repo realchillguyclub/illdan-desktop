@@ -79,6 +79,15 @@ class TodoRepositoryImpl(
         )
     }
 
+    override suspend fun updateTodoStatus(todoId: Long): Flow<Result<Unit>> = flow {
+        emit(
+            fetch(
+                method = HttpMethod.PATCH,
+                path = "/todo/${todoId}/achieve",
+            )
+        )
+    }
+
     override suspend fun createLocalTodo(todo: Todo): Flow<Result<Unit>> = flow {
         dataSource.upsert(todo)
     }
