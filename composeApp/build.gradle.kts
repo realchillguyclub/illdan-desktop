@@ -57,6 +57,7 @@ kotlin {
 
             implementation(libs.serialization)
 
+            implementation(libs.coilNetwork)
             implementation(libs.coilCompose)
             implementation(libs.coilSvg)
 
@@ -69,6 +70,8 @@ kotlin {
             implementation(libs.reorderable)
 
             implementation(libs.logBack)
+
+            implementation(libs.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -96,6 +99,12 @@ compose.desktop {
             packageName = "com.illdan.desktop"
             packageVersion = "1.0.0"
             modules("java.sql")
+
+            macOS {
+                bundleID = "com.illdan.desktop"
+                dockName = "illdan"
+                entitlementsFile.set(project.file("src/jvmMain/resources/entitlements.plist"))
+            }
         }
     }
 }
