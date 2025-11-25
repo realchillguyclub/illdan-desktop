@@ -179,6 +179,9 @@ class MainViewModel(
 
     fun onMove(from: Int, to: Int) {
         val currentList = uiState.value.currentTodoList.toMutableList()
+
+        if (currentList[from].todoStatus == TodoStatus.COMPLETED || currentList[to].todoStatus == TodoStatus.COMPLETED) return
+
         currentList.move(from, to)
         onDragEnd(currentList)
         updateState(uiState.value.copy(currentTodoList = currentList))
