@@ -7,6 +7,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -44,22 +46,32 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
+import coil3.compose.AsyncImage
 import com.illdan.desktop.core.design_system.AppTypo
+import com.illdan.desktop.core.design_system.Bookmark
 import com.illdan.desktop.core.design_system.Gray00
+import com.illdan.desktop.core.design_system.Gray50
 import com.illdan.desktop.core.design_system.Gray80
+import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.Gray95
+import com.illdan.desktop.core.design_system.Primary40
+import com.illdan.desktop.core.design_system.WORD_BOOKMARK
+import com.illdan.desktop.core.util.DateTimeFormatter
 import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.todo.Todo
 import illdandesktop.composeapp.generated.resources.Res
 import illdandesktop.composeapp.generated.resources.ic_arrow_left
 import illdandesktop.composeapp.generated.resources.ic_arrow_right
+import illdandesktop.composeapp.generated.resources.ic_calendar
+import illdandesktop.composeapp.generated.resources.ic_repeat
+import illdandesktop.composeapp.generated.resources.ic_star
 import illdandesktop.composeapp.generated.resources.ic_three_dot
 import kotlinx.coroutines.flow.filter
 import org.jetbrains.compose.resources.painterResource
@@ -195,58 +207,11 @@ fun TodoItem(
                 ),
                 cursorBrush = SolidColor(Gray00)
             )
-//            if (isActive) {
-//                LaunchedEffect(Unit) {
-//                    focusRequester.requestFocus()
-//                }
-//
-//                BasicTextField(
-//                    value = textFieldValue,
-//                    onValueChange = { newTextFieldValue ->
-//                        textFieldValue = newTextFieldValue
-//                    },
-//                    textStyle = AppTypo().mdRegular.copy(color = Gray00),
-//                    modifier = Modifier
-//                        .focusRequester(focusRequester)
-//                        .onFocusChanged { focusState ->
-//                            if (focusState.isFocused) {
-//                                textFieldValue = textFieldValue.copy(
-//                                    selection = TextRange(textFieldValue.text.length)
-//                                )
-//                            }
-//                        },
-//                    keyboardOptions = KeyboardOptions.Default.copy(
-//                        imeAction = ImeAction.Done
-//                    ),
-//                    keyboardActions = KeyboardActions(
-//                        onDone = {
-//                            keyboardController?.hide()
-//                            onClearActiveItem()
-//                            if (item.content != textFieldValue.text) onTodoItemModified(item.todoId, textFieldValue.text)
-//                        }
-//                    ),
-//                    cursorBrush = SolidColor(Gray00)
-//                )
-//            } else {
-//                AppText(
-//                    text = item.content,
-//                    color = Gray00,
-//                    style = AppTextStyle.mdRegular,
-//                    modifier = Modifier
-//                        .offset(y = 1.5.dp)
-//                )
-//            }
 
-            Spacer(modifier = Modifier.height(8.dp))
-//            RepeatDeadlineRow(
-//                item = item,
-//                isDeadlineDateMode = isDeadlineDateMode
-//            )
-//
-//            if (item.isBookmark || item.time.isNotEmpty() || item.categoryName.isNotEmpty()) {
-//                Spacer(modifier = Modifier.height(8.dp))
-//                BookmarkTimeCategoryItem(item)
-//            }
+            if (item.isBookmark || item.imageUrl.isNotBlank() || item.deadline.isNotBlank() || item.routineDays.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                TodoMetaInfoSection(item)
+            }
         }
 
         if (isToday) {
@@ -267,5 +232,73 @@ fun TodoItem(
                 .size(24.dp)
                 .clickable { showBottomSheet(item) }
         )
+    }
+}
+
+@Composable
+private fun TodoMetaInfoSection(
+    item: Todo
+) {
+    val deadline = DateTimeFormatter.formatDeadline(item.deadline)
+    val routineDays = item.routineDays.joinToString("")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (deadline.isNotBlank()) { TodoMetaInfoItem(icon = painterResource(Res.drawable.ic_calendar), text = deadline) }
+        if (routineDays.isNotBlank()) { TodoMetaInfoItem(icon = painterResource(Res.drawable.ic_repeat), text = routineDays) }
+        if (item.isBookmark) { BookmarkCategoryInfoItem(imageUrl = item.imageUrl, categoryName = item.categoryName, isBookmark = true) }
+        if (item.imageUrl.isNotBlank()) { BookmarkCategoryInfoItem(imageUrl = item.imageUrl, categoryName = item.categoryName, isBookmark = false) }
+    }
+}
+
+@Composable
+private fun TodoMetaInfoItem(
+    icon: Painter,
+    text: String
+) {
+    Row(
+        modifier = Modifier
+            .background(Gray90, RoundedCornerShape(6.dp))
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(painter = icon, contentDescription = null, modifier = Modifier.size(12.dp))
+        Spacer(Modifier.width(3.dp))
+        AppText(text = text, style = AppTextStyle.xsRegular, color = Gray50)
+    }
+}
+
+@Composable
+private fun BookmarkCategoryInfoItem(
+    imageUrl: String,
+    categoryName: String,
+    isBookmark: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .background(Gray90, RoundedCornerShape(6.dp))
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (isBookmark) {
+            Image(
+                painter = painterResource(Res.drawable.ic_star),
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                colorFilter = ColorFilter.tint(Primary40)
+            )
+        } else {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                onError = { Logger.e("IMAGE ERROR → ${it.result.throwable}") }
+            )
+        }
+        Spacer(Modifier.width(3.dp))
+        AppText(text = if (isBookmark) WORD_BOOKMARK else categoryName, style = AppTextStyle.xsRegular, color = Gray50)
     }
 }
