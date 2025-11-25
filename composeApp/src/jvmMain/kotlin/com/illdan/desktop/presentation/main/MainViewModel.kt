@@ -4,10 +4,12 @@ import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
+import com.illdan.desktop.domain.enums.TodoType
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
+import com.illdan.desktop.domain.model.request.todo.ReorderTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.TodoId
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
@@ -134,7 +136,7 @@ class MainViewModel(
         getTodoList(category)
     }
 
-    /**---------------------------------------------할 일 생성----------------------------------------------*/
+    /**---------------------------------------------할 일 스와이프----------------------------------------------*/
     fun swipeTodo(todoId: Long) {
         val newList = uiState.value.currentTodoList.filter { it.todoId != todoId }
         updateState(uiState.value.copy(currentTodoList = newList))
@@ -150,9 +152,9 @@ class MainViewModel(
         val category = uiState.value.currentCategory
 
         if (category.id == -2L) {
-            getTodoList(category)
-        } else {
             getTodayList()
+        } else {
+            getTodoList(category)
         }
     }
 
@@ -183,7 +185,21 @@ class MainViewModel(
     }
 
     fun onDragEnd(newList: List<Todo>) {
-        // TODO(서버 통신 로직)
+        val todoIdList = newList.map { it.todoId }
+        val todoType = if (uiState.value.currentCategory.id == -2L) TodoType.TODAY else TodoType.BACKLOG
+
+        viewModelScope.launch {
+            todoRepository.reorderTodoList(request = ReorderTodoListRequest(type = todoType.name, todoIds = todoIdList)).collect {
+                resultResponse(it, {}, { onFailReorderTodoList(todoType) })
+            }
+        }
+    }
+
+    private fun onFailReorderTodoList(todoType: TodoType) {
+        when(todoType) {
+            TodoType.TODAY -> getTodayList()
+            TodoType.BACKLOG -> getTodoList(uiState.value.currentCategory)
+        }
     }
 
     /**---------------------------------------------메모----------------------------------------------*/

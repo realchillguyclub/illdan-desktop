@@ -8,6 +8,7 @@ import com.illdan.desktop.domain.datasource.TodoLocalDataSource
 import com.illdan.desktop.domain.enums.HttpMethod
 import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
+import com.illdan.desktop.domain.model.request.todo.ReorderTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.TodoId
 import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
@@ -63,6 +64,16 @@ class TodoRepositoryImpl(
             fetch(
                 method = HttpMethod.PATCH,
                 path = "/swipe",
+                body = request
+            )
+        )
+    }
+
+    override suspend fun reorderTodoList(request: ReorderTodoListRequest): Flow<Result<Unit>> = flow {
+        emit(
+            fetch(
+                method = HttpMethod.PATCH,
+                path = "/todo/dragAndDrop",
                 body = request
             )
         )
