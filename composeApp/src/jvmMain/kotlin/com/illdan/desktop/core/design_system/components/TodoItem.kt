@@ -57,6 +57,7 @@ import com.illdan.desktop.core.design_system.AppTypo
 import com.illdan.desktop.core.design_system.Bookmark
 import com.illdan.desktop.core.design_system.Gray00
 import com.illdan.desktop.core.design_system.Gray50
+import com.illdan.desktop.core.design_system.Gray70
 import com.illdan.desktop.core.design_system.Gray80
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.Gray95
@@ -87,6 +88,7 @@ fun TodoItem(
     onClearActiveItem: () -> Unit = {},
     onTodoItemModified: (Long, String) -> Unit = { _, _ -> },
     onCheckedChange: (TodoStatus, Long) -> Unit = { _, _ -> },
+    onBookmarkClick: (Long) -> Unit = {},
     onSwiped: (Long) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -99,37 +101,6 @@ fun TodoItem(
             )
         )
     }
-    var showAnimation by remember { mutableStateOf(false) }
-    val transition = updateTransition(targetState = showAnimation, label = "")
-    val elevation by transition.animateDp(
-        transitionSpec = { spring() },
-        label = ""
-    ) { isAnimating ->
-        if (isAnimating) 8.dp else 0.dp
-    }
-
-    val scale by transition.animateFloat(
-        transitionSpec = { spring() },
-        label = ""
-    ) { isAnimating ->
-        if (isAnimating) 1.1f else 1f
-    }
-
-    val yOffset by transition.animateFloat(
-        transitionSpec = { spring() },
-        label = ""
-    ) { isAnimating ->
-        if (isAnimating) -50f else 0f
-    }
-    val elevationPx = with(LocalDensity.current) { elevation.toPx() }
-
-    LaunchedEffect(transition) {
-        snapshotFlow { transition.currentState }
-            .filter { it }
-            .collect {
-                showAnimation = false
-            }
-    }
 
     Row(
         modifier = modifier
@@ -138,12 +109,6 @@ fun TodoItem(
             .background(Gray95)
             .padding(vertical = 16.dp)
             .padding(start = 16.dp, end = 12.dp)
-            .offset { IntOffset(0, yOffset.toInt()) }
-            .graphicsLayer(
-                scaleX = scale,
-                scaleY = scale,
-                shadowElevation = elevationPx
-            )
     ) {
         if (isToday) {
             CommonCheckBox(
@@ -222,15 +187,28 @@ fun TodoItem(
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+
+//        Image(
+//            painter = painterResource(Res.drawable.ic_three_dot),
+//            contentDescription = null,
+//            colorFilter = ColorFilter.tint(Gray80),
+//            modifier = Modifier
+//                .size(24.dp)
+//                .clip(CircleShape)
+//                .clickable { showBottomSheet(item) }
+//        )
+//
+//        Spacer(modifier = Modifier.width(8.dp))
 
         Image(
-            painter = painterResource(Res.drawable.ic_three_dot),
+            painter = painterResource(Res.drawable.ic_star),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(Gray80),
+            colorFilter = ColorFilter.tint(if (item.isBookmark) Primary40 else Gray70),
             modifier = Modifier
                 .size(24.dp)
-                .clickable { showBottomSheet(item) }
+                .clip(CircleShape)
+                .clickable { onBookmarkClick(item.todoId) }
         )
     }
 }
