@@ -1,6 +1,7 @@
 package com.illdan.desktop.core.design_system
 
 const val WORD_NOTEPAD = "메모장"
+const val WORD_BOOKMARK = "중요"
 
 const val PLACEHOLDER_TEXT_FILED = "할 일 추가하기..."
 const val PLACEHOLDER_MEMO_TITLE = "제목을 추가하세요."
