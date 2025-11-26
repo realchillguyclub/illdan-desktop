@@ -257,6 +257,16 @@ private fun TodoList(
         }
     }
 
+    // 새로운 아이템이 상단에 추가될 때만 스크롤을 0으로 되돌림
+    LaunchedEffect(headId) {
+        if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset != 0) {
+            if (previousSize < todoList.size) {
+                previousSize = todoList.size
+                listState.animateScrollToItem(0, 0)
+            }
+        }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         state = listState,
@@ -322,15 +332,6 @@ private fun TodoList(
 
             LaunchedEffect(isNew) {
                 if (isNew) seenIds += item.todoId
-            }
-        }
-    }
-
-    LaunchedEffect(headId) {
-        if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset != 0) {
-            if (previousSize < todoList.size) {
-                previousSize = todoList.size
-                listState.animateScrollToItem(0, 0)
             }
         }
     }
