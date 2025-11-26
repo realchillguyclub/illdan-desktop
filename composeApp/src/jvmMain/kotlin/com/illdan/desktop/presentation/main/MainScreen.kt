@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -242,15 +243,26 @@ private fun TodoList(
     val reorderableLazyListState = rememberReorderableLazyListState(listState) { from, to ->
         onMove(from.index, to.index)
     }
+    var previousSize by remember { mutableIntStateOf(todoList.size) }
     val scope = rememberCoroutineScope()
     val swipeAnimDuration = 220
+
+    data class ScrollSnapshot(val index: Int, val offset: Int)
+    var pendingScrollRestore by remember { mutableStateOf<ScrollSnapshot?>(null) }
+
+    LaunchedEffect(todoList) {
+        pendingScrollRestore?.let { snapshot ->
+            listState.scrollToItem(snapshot.index, snapshot.offset)
+            pendingScrollRestore = null
+        }
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         state = listState,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        items(todoList, key = { it.todoId }) { item ->
+        items(todoList, key = { "${it.todoId}_${it.todoStatus}"  }) { item ->
             val isNew = remember(item.todoId) { item.todoId !in seenIds }
             val visibleState = remember(item.todoId) {
                 MutableTransitionState(!isNew).apply { targetState = true }
@@ -290,7 +302,12 @@ private fun TodoList(
                             isDeadlineDateMode = false,
                             modifier = Modifier.fillMaxWidth(),
                             isToday = isToday,
-                            onCheckedChange = onCheckedChange,
+                            onCheckedChange = { status, id ->
+                                val index = listState.firstVisibleItemIndex
+                                val offset = listState.firstVisibleItemScrollOffset
+                                pendingScrollRestore = ScrollSnapshot(index, offset)
+                                onCheckedChange(status, id)
+                            },
                             onSwiped = {
                                 scope.launch {
                                     visibleState.targetState = false
@@ -311,7 +328,10 @@ private fun TodoList(
 
     LaunchedEffect(headId) {
         if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset != 0) {
-            listState.animateScrollToItem(0, 0)
+            if (previousSize < todoList.size) {
+                previousSize = todoList.size
+                listState.animateScrollToItem(0, 0)
+            }
         }
     }
 }

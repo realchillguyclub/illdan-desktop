@@ -183,6 +183,16 @@ class MainViewModel(
                 currentTodoList = if (uiState.value.currentCategory.id == -2L) newList else uiState.value.currentTodoList
             )
         )
+
+        viewModelScope.launch {
+            todoRepository.updateTodoStatus(todoId = id).collect {
+                resultResponse(it, {}, ::onFailUpdateTodoStatus)
+            }
+        }
+    }
+
+    private fun onFailUpdateTodoStatus(e: Throwable) {
+        getTodayList()
     }
 
     /**---------------------------------------------할 일 드래그 앤 드롭----------------------------------------------*/
