@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.buildKonfig)
+    alias(libs.plugins.sqldelight)
+    alias(libs.plugins.serialization)
 }
 
 extensions.configure<BuildKonfigExtension> {
@@ -54,6 +56,22 @@ kotlin {
             implementation(libs.koinComposeViewModel)
 
             implementation(libs.serialization)
+
+            implementation(libs.coilNetwork)
+            implementation(libs.coilCompose)
+            implementation(libs.coilSvg)
+
+            implementation(libs.navigation)
+
+            implementation(libs.coroutines.core)
+
+            implementation(libs.coroutines.extensions)
+
+            implementation(libs.reorderable)
+
+            implementation(libs.logBack)
+
+            implementation(libs.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -62,10 +80,15 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.driver)
+
+            implementation(libs.kermit)
+            implementation(libs.kermit.core)
+
+            implementation(libs.dataStore)
         }
     }
 }
-
 
 compose.desktop {
     application {
@@ -75,6 +98,27 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.illdan.desktop"
             packageVersion = "1.0.0"
+
+            modules(
+                "java.sql",
+                "jdk.crypto.ec",
+                "jdk.unsupported",
+                "jdk.unsupported.desktop"
+            )
+
+            macOS {
+                bundleID = "com.illdan.desktop"
+                dockName = "illdan"
+                entitlementsFile.set(project.file("src/jvmMain/resources/entitlements.plist"))
+            }
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.illdan.desktop")
         }
     }
 }

@@ -1,18 +1,29 @@
 package com.illdan.desktop.core.network
 
+import co.touchlab.kermit.Logger
 import com.illdan.desktop.BuildKonfig
+import com.illdan.desktop.core.network.base.ApiException
+import com.illdan.desktop.core.network.base.ApiResponse
+import com.illdan.desktop.data.local.datastore.AppDataStore
 import com.illdan.desktop.domain.enums.HttpMethod
+import com.illdan.desktop.domain.error.DomainError
 import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 
 class NetworkClient(
-    val tokenProvider: TokenProvider
+    val dataStore: AppDataStore = AppDataStore
 ) {
+    val logger = Logger.withTag("NetworkClient")
     val httpClient = httpClient()
-
     val baseUrl: String = BuildKonfig.BASE_URL
+        .trim()
+        .trim('"')
+        .removeSuffix("/")
+
+    fun joinUrl(path: String): String =
+        "$baseUrl/${path.trimStart('/')}"
 
     suspend inline fun <reified T> request(
         method: HttpMethod,
@@ -23,7 +34,9 @@ class NetworkClient(
         isReissue: Boolean = false
     ): Result<T> {
         return try {
-            val response = httpClient.request("$baseUrl$path") {
+            val tokens = if (addAuthHeader) dataStore.getTokensOnce() else null
+            val response = httpClient.request(joinUrl(path)) {
+                logger.d { joinUrl(path) }
                 this.method = when (method) {
                     HttpMethod.GET -> io.ktor.http.HttpMethod.Get
                     HttpMethod.POST -> io.ktor.http.HttpMethod.Post
@@ -40,16 +53,42 @@ class NetworkClient(
                     setBody(body)
                 }
 
-                if (addAuthHeader) {
-                    tokenProvider.getToken()?.let { token ->
-                        header("Authorization", "Bearer ${if (isReissue) token.refreshToken else token.accessToken}")
-                    }
+                if (addAuthHeader && tokens != null) {
+                    val value = if (isReissue) tokens.refreshToken else tokens.accessToken
+                    header("Authorization", "Bearer $value")
+                    header("X-Mobile-Type", "DESKTOP")
                 }
             }
 
-            Result.success(response.body())
+            val apiResponse: ApiResponse<T> = response.body()
+
+            if (apiResponse.isSuccess) {
+                val value: T = apiResponse.result ?: (Unit as T)
+                Result.success(value)
+            } else {
+                val domainError = mapApiErrorToDomain(apiResponse.code, apiResponse.message)
+                logger.e { "request 실패: $method, $domainError" }
+                Result.failure(domainError)
+            }
         } catch (e: Exception) {
-            Result.failure(e)
+            logger.e(e) { "request 실패: $method" }
+            // Http 타임아웃, IOException과 같은 기타 예외
+            Result.failure(mapThrowableToDomain(e))
         }
     }
+
+    fun mapApiErrorToDomain(code: String?, message: String?): DomainError =
+        when (code) {
+            "AUTH-002" -> DomainError.AuthExpired
+            else -> DomainError.Unknown(
+                e = ApiException(code ?: "UNKNOWN", message ?: "알 수 없는 에러")
+            )
+        }
+
+    fun mapThrowableToDomain(t: Throwable): DomainError =
+        when (t) {
+            is java.io.IOException -> DomainError.Network(t)
+            is DomainError -> t
+            else -> DomainError.Unknown(t)
+        }
 }

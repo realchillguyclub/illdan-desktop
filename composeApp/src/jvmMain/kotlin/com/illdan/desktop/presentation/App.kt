@@ -14,6 +14,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.illdan.desktop.core.design_system.AppTheme
+import com.illdan.desktop.core.navigation.AppNavHost
+import com.illdan.desktop.core.ui.util.DismissKeyboardOnClick
+import com.illdan.desktop.presentation.main.MainScreen
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -24,17 +27,8 @@ import illdandesktop.composeapp.generated.resources.compose_multiplatform
 @Preview
 fun App() {
     AppTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
+        DismissKeyboardOnClick {
+            AppNavHost()
         }
     }
 }
