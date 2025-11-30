@@ -107,7 +107,7 @@ fun MainScreen(
         onCheckedChange = viewModel::updateTodoStatus,
         onMemoClick = viewModel::toggleMemoShrink,
         onMemoSubmit = viewModel::createMemo,
-        onBookmarkClick = viewModel::updateTodoBookmarkg
+        onBookmarkClick = viewModel::updateTodoBookmark
     )
 }
 
