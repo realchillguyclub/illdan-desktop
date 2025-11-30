@@ -105,6 +105,7 @@ fun MainScreen(
         onSwiped = viewModel::swipeTodo,
         onShrinkChange = viewModel::toggleSideBarShrink,
         onCheckedChange = viewModel::updateTodoStatus,
+        onAllTodoClick = { if (!uiState.isMemoShrink) viewModel.toggleMemoShrink() },
         onMemoClick = viewModel::toggleMemoShrink,
         onMemoSubmit = viewModel::createMemo,
         onBookmarkClick = viewModel::updateTodoBookmark
@@ -122,6 +123,7 @@ private fun MainContent(
     onSwiped: (Long) -> Unit,
     onShrinkChange: () -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
+    onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
     onMemoSubmit: (Pair<String, String>) -> Unit,
     onBookmarkClick: (Long) -> Unit
@@ -133,6 +135,7 @@ private fun MainContent(
         SideBar(
             isShrink = uiState.isSideBarShrink,
             onShrinkChange = onShrinkChange,
+            onAllTodoClick = onAllTodoClick,
             onMemoClick = onMemoClick
         )
 
