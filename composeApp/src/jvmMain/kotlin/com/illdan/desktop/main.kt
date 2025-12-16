@@ -37,7 +37,7 @@ fun main() {
             state = windowState
         ) {
             LaunchedEffect(Unit) {
-                window.minimumSize = Dimension(900, 600)
+                window.minimumSize = Dimension(600, 400)
             }
 
             App()

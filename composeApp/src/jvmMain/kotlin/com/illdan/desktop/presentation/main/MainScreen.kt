@@ -105,8 +105,10 @@ fun MainScreen(
         onSwiped = viewModel::swipeTodo,
         onShrinkChange = viewModel::toggleSideBarShrink,
         onCheckedChange = viewModel::updateTodoStatus,
+        onAllTodoClick = { if (!uiState.isMemoShrink) viewModel.toggleMemoShrink() },
         onMemoClick = viewModel::toggleMemoShrink,
-        onMemoSubmit = viewModel::createMemo
+        onMemoSubmit = viewModel::createMemo,
+        onBookmarkClick = viewModel::updateTodoBookmark
     )
 }
 
@@ -121,8 +123,10 @@ private fun MainContent(
     onSwiped: (Long) -> Unit,
     onShrinkChange: () -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
+    onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
-    onMemoSubmit: (Pair<String, String>) -> Unit
+    onMemoSubmit: (Pair<String, String>) -> Unit,
+    onBookmarkClick: (Long) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -131,6 +135,7 @@ private fun MainContent(
         SideBar(
             isShrink = uiState.isSideBarShrink,
             onShrinkChange = onShrinkChange,
+            onAllTodoClick = onAllTodoClick,
             onMemoClick = onMemoClick
         )
 
@@ -189,7 +194,8 @@ private fun MainContent(
                     isToday = uiState.currentCategory.id == -2L,
                     onMove = onMove,
                     onSwiped =onSwiped,
-                    onCheckedChange = onCheckedChange
+                    onCheckedChange = onCheckedChange,
+                    onBookmarkClick = onBookmarkClick
                 )
             }
         }
@@ -235,7 +241,8 @@ private fun TodoList(
     isToday: Boolean,
     onMove: (Int, Int) -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
-    onSwiped: (Long) -> Unit
+    onSwiped: (Long) -> Unit,
+    onBookmarkClick: (Long) -> Unit
 ) {
     val seenIds = remember { mutableStateListOf<Long>() }
     val headId = todoList.firstOrNull()?.todoId
@@ -324,7 +331,8 @@ private fun TodoList(
                                     delay(swipeAnimDuration.toLong())
                                     onSwiped(it)
                                 }
-                            }
+                            },
+                            onBookmarkClick = onBookmarkClick
                         )
                     }
                 }

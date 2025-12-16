@@ -195,6 +195,33 @@ class MainViewModel(
         getTodayList()
     }
 
+    /**---------------------------------------------할 일 북마크----------------------------------------------*/
+
+    fun updateTodoBookmark(todoId: Long) {
+        updateTodoBookmarkInUI(todoId)
+
+        viewModelScope.launch {
+            todoRepository.updateTodoBookmark(todoId = todoId).collect {
+                resultResponse(it, {}, ::onFailUpdateTodoBookmark)
+            }
+        }
+    }
+
+    private fun updateTodoBookmarkInUI(todoId: Long) {
+        val todo = uiState.value.currentTodoList.firstOrNull { it.todoId == todoId }
+
+        if (todo == null) return
+
+        val newTodo = todo.copy(isBookmark = !todo.isBookmark)
+        val newList = uiState.value.currentTodoList.map { if (it.todoId == todoId) newTodo else it }
+
+        updateState(uiState.value.copy(currentTodoList = newList))
+    }
+
+    private fun onFailUpdateTodoBookmark(e: Throwable) {
+        getTodoList(category = uiState.value.currentCategory)
+    }
+
     /**---------------------------------------------할 일 드래그 앤 드롭----------------------------------------------*/
 
     fun onMove(from: Int, to: Int) {
