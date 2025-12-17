@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class ReissueRequest(
     val accessToken: String = "",
     val refreshToken: String = "",
-    val clientId: String = ""
+    val clientId: String = "",
+    val mobileType: String = "DESKTOP"
 )
