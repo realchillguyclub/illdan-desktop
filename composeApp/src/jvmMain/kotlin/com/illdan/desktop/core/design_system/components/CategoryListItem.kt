@@ -40,10 +40,10 @@ import org.jetbrains.compose.resources.painterResource
 fun CategoryListItem(
     category: Category,
     isSelected: Boolean = false,
-    interactionSource: MutableInteractionSource,
     onClick: () -> Unit = {}
 ) {
     val context = LocalPlatformContext.current
+    val interactionSource = remember { MutableInteractionSource() }
     val imageLoader = remember(context) {
         ImageLoader.Builder(context)
             .components { add(SvgDecoder.Factory()) }
