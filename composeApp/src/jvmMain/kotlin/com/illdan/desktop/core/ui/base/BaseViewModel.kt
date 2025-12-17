@@ -45,20 +45,18 @@ abstract class BaseViewModel<STATE: UiState>(
         successCallback: (D) -> Unit,
         errorCallback: ((Throwable) -> Unit)? = null
     ) {
-        viewModelScope.launch {
-            response.fold(
-                onSuccess = { data ->
-                    successCallback.invoke(data)
-                },
-                onFailure = { throwable ->
-                    when(throwable) {
-                        is DomainError.AuthExpired -> GlobalEventManager.navigateToLogin()
-                    }
-
-                    logger.e { "에러 발생: ${throwable.stackTraceToString()}" }
-                    errorCallback?.invoke(throwable)
+        response.fold(
+            onSuccess = { data ->
+                successCallback.invoke(data)
+            },
+            onFailure = { throwable ->
+                when(throwable) {
+                    is DomainError.AuthExpired -> viewModelScope.launch { GlobalEventManager.navigateToLogin() }
                 }
-            )
-        }
+
+                logger.e { "에러 발생: ${throwable.stackTraceToString()}" }
+                errorCallback?.invoke(throwable)
+            }
+        )
     }
 }

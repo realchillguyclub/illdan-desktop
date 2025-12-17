@@ -40,10 +40,10 @@ import org.jetbrains.compose.resources.painterResource
 fun CategoryListItem(
     category: Category,
     isSelected: Boolean = false,
-    interactionSource: MutableInteractionSource,
     onClick: () -> Unit = {}
 ) {
     val context = LocalPlatformContext.current
+    val interactionSource = remember { MutableInteractionSource() }
     val imageLoader = remember(context) {
         ImageLoader.Builder(context)
             .components { add(SvgDecoder.Factory()) }
@@ -54,12 +54,12 @@ fun CategoryListItem(
         modifier = Modifier
             .width(180.dp)
             .background(if (isSelected) Gray90 else Gray95, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-            .padding(horizontal = 16.dp, vertical = 10.dp)
             .clickable(
                 indication = null,
                 interactionSource = interactionSource,
                 onClick = onClick
-            ),
+            )
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         when (category.id) {

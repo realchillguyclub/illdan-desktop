@@ -46,6 +46,7 @@ import org.jetbrains.compose.resources.painterResource
 fun SideBar(
     isShrink: Boolean,
     onShrinkChange: () -> Unit,
+    onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit
 ) {
     var selectedMenu by remember { mutableStateOf("") }
@@ -68,7 +69,7 @@ fun SideBar(
             title = ALL_TODO,
             isSelected = selectedMenu == ALL_TODO,
             isShrink = isShrink,
-            onClick = { selectedMenu = ALL_TODO }
+            onClick = { selectedMenu = ALL_TODO; onAllTodoClick() }
         )
         Spacer(Modifier.height(12.dp))
         SideBarMenuItem(
@@ -106,10 +107,11 @@ private fun SideBarMenuItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(if (isSelected) Gray95 else Gray100, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .clickable{ onClick() }
             .height(40.dp)
             .padding(vertical = 8.dp)
-            .padding(start = 8.dp, end = if (isShrink) 8.dp else  10.dp)
-            .clickable{ onClick() },
+            .padding(start = 8.dp, end = if (isShrink) 8.dp else  10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(painter = icon, contentDescription = null, modifier = Modifier.size(24.dp))
