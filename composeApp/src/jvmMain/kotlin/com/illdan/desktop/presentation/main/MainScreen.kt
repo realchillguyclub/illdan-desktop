@@ -20,6 +20,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -50,6 +52,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -61,6 +64,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.illdan.desktop.core.design_system.Gray100
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.PLACEHOLDER_TEXT_FILED
+import com.illdan.desktop.core.design_system.components.AddCategoryButton
+import com.illdan.desktop.core.design_system.components.CategoryDialog
 import com.illdan.desktop.core.design_system.components.CategoryListItem
 import com.illdan.desktop.core.design_system.components.MemoBar
 import com.illdan.desktop.core.design_system.components.RoundedOutlineTextField
@@ -85,7 +90,6 @@ fun MainScreen(
     navigateToLoginScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val interactionSource = remember { MutableInteractionSource() }
 
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collect { event ->
@@ -97,7 +101,6 @@ fun MainScreen(
 
     MainContent(
         uiState = uiState,
-        interactionSource = interactionSource,
         onEnterClicked = viewModel::createTodo,
         onCategoryClicked = viewModel::updateCurrentCategory,
         onTodayClicked = viewModel::getTodayList,
@@ -108,14 +111,14 @@ fun MainScreen(
         onAllTodoClick = { if (!uiState.isMemoShrink) viewModel.toggleMemoShrink() },
         onMemoClick = viewModel::toggleMemoShrink,
         onMemoSubmit = viewModel::createMemo,
-        onBookmarkClick = viewModel::updateTodoBookmark
+        onBookmarkClick = viewModel::updateTodoBookmark,
+        onCreateCategory = viewModel::createCategory
     )
 }
 
 @Composable
 private fun MainContent(
     uiState: MainUiState,
-    interactionSource: MutableInteractionSource,
     onEnterClicked: (String) -> Unit,
     onCategoryClicked: (Int) -> Unit,
     onTodayClicked: () -> Unit,
@@ -126,79 +129,97 @@ private fun MainContent(
     onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
     onMemoSubmit: (Pair<String, String>) -> Unit,
-    onBookmarkClick: (Long) -> Unit
+    onBookmarkClick: (Long) -> Unit,
+    onCreateCategory: (String, Long) -> Unit
 ) {
-    Row(
+    var showCategoryDialog by remember { mutableStateOf(false) }
+
+    Box(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        SideBar(
-            isShrink = uiState.isSideBarShrink,
-            onShrinkChange = onShrinkChange,
-            onAllTodoClick = onAllTodoClick,
-            onMemoClick = onMemoClick
-        )
-
-        AnimatedVisibility(
-            visible = !uiState.isMemoShrink,
-            modifier = Modifier.background(Gray100),
-            enter = fadeIn() + expandHorizontally(),
-            exit = fadeOut() + shrinkHorizontally()
-        ) {
-            MemoBar(
-                memoList = uiState.memoList,
-                onMemoSubmit = onMemoSubmit
-            )
-        }
-
-        Column(
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(Gray100),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
         ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_top_banner),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .size(width = 228.dp, height = 21.dp)
+            SideBar(
+                isShrink = uiState.isSideBarShrink,
+                onShrinkChange = onShrinkChange,
+                onAllTodoClick = onAllTodoClick,
+                onMemoClick = onMemoClick
             )
 
-            Spacer(Modifier.height(20.dp))
-
-            CategoryList(
-                today = uiState.todayCategory,
-                categoryList = uiState.categoryList,
-                currentCategory = uiState.currentCategory,
-                interactionSource = interactionSource,
-                onCategoryClicked = onCategoryClicked,
-                onTodayClicked = onTodayClicked
-            )
+            AnimatedVisibility(
+                visible = !uiState.isMemoShrink,
+                modifier = Modifier.background(Gray100),
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally()
+            ) {
+                MemoBar(
+                    memoList = uiState.memoList,
+                    onMemoSubmit = onMemoSubmit
+                )
+            }
 
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .weight(1f)
-                    .background(Gray90)
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 16.dp)
+                    .fillMaxHeight()
+                    .background(Gray100),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextFieldSection(onDone = onEnterClicked)
-
-                Spacer(Modifier.height(28.dp))
-
-                TodoList(
-                    todoList = uiState.currentTodoList,
-                    isToday = uiState.currentCategory.id == -2L,
-                    onMove = onMove,
-                    onSwiped =onSwiped,
-                    onCheckedChange = onCheckedChange,
-                    onBookmarkClick = onBookmarkClick
+                Image(
+                    painter = painterResource(Res.drawable.ic_top_banner),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(vertical = 12.dp)
+                        .size(width = 228.dp, height = 21.dp)
                 )
+
+                Spacer(Modifier.height(20.dp))
+
+                CategoryList(
+                    today = uiState.todayCategory,
+                    categoryList = uiState.categoryList,
+                    currentCategory = uiState.currentCategory,
+                    onCategoryClicked = onCategoryClicked,
+                    onTodayClicked = onTodayClicked,
+                    onAddClicked = { showCategoryDialog = true }
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(Gray90)
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 16.dp)
+                ) {
+                    TextFieldSection(onDone = onEnterClicked)
+
+                    Spacer(Modifier.height(28.dp))
+
+                    TodoList(
+                        todoList = uiState.currentTodoList,
+                        isToday = uiState.currentCategory.id == -2L,
+                        onMove = onMove,
+                        onSwiped =onSwiped,
+                        onCheckedChange = onCheckedChange,
+                        onBookmarkClick = onBookmarkClick
+                    )
+                }
             }
         }
+
+        CategoryDialog(
+            visible = showCategoryDialog,
+            selectedCategory = uiState.selectedCategory,
+            groupEmoji = uiState.emojiList,
+            isEdit = false,
+            onDismiss = { showCategoryDialog = false },
+            onCreateClick = onCreateCategory
+        )
     }
 }
 
@@ -207,31 +228,57 @@ private fun CategoryList(
     today: Category,
     categoryList: List<Category>,
     currentCategory: Category,
-    interactionSource: MutableInteractionSource,
     onCategoryClicked: (Int) -> Unit,
-    onTodayClicked: () -> Unit
+    onTodayClicked: () -> Unit,
+    onAddClicked: () -> Unit
 ) {
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        item {
-            CategoryListItem(
-                category = today,
-                isSelected = currentCategory.id == today.id,
-                interactionSource = interactionSource,
-                onClick = { onTodayClicked() }
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LazyRow(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                item {
+                    CategoryListItem(
+                        category = today,
+                        isSelected = currentCategory.id == today.id,
+                        onClick = { onTodayClicked() }
+                    )
+                }
+
+                itemsIndexed(categoryList, key = { _, item -> item.id }) { index, item ->
+                    CategoryListItem(
+                        category = item,
+                        isSelected = currentCategory.id == item.id,
+                        onClick = { onCategoryClicked(index) }
+                    )
+                }
+            }
+
+            AddCategoryButton(onClick = onAddClicked)
         }
 
-        itemsIndexed(categoryList, key = { _, item -> item.id }) { index, item ->
-            CategoryListItem(
-                category = item,
-                isSelected = currentCategory.id == item.id,
-                interactionSource = interactionSource,
-                onClick = { onCategoryClicked(index) }
-            )
-        }
+        Box(
+            modifier = Modifier
+                .padding(end = 180.dp)
+                .align(Alignment.CenterEnd)
+                .width(50.dp)
+                .height(40.dp)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        listOf(
+                            Gray100.copy(alpha = 0f),
+                            Gray100.copy(alpha = 1f)
+                        )
+                    )
+                )
+        )
     }
 }
 

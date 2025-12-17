@@ -6,7 +6,9 @@ import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.enums.TodoType
 import com.illdan.desktop.domain.model.category.Category
+import com.illdan.desktop.domain.model.category.GroupEmoji
 import com.illdan.desktop.domain.model.memo.Memo
+import com.illdan.desktop.domain.model.request.category.CreateCategoryRequest
 import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.ReorderTodoListRequest
@@ -19,6 +21,7 @@ import com.illdan.desktop.domain.repository.TodoRepository
 import com.illdan.desktop.presentation.login.AuthEvent
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
@@ -35,6 +38,7 @@ class MainViewModel(
         initCategory()
         getCategoryList()
         getTodayList()
+        getEmojis()
     }
 
     private fun checkForFirstOpen() {
@@ -82,6 +86,34 @@ class MainViewModel(
                 currentCategory = newCategory
             )
         )
+    }
+
+    // 카테고리 이모지 조회
+    fun getEmojis() {
+        if (uiState.value.emojiList.groupEmojis.isNotEmpty()) return
+
+        viewModelScope.launch {
+            categoryRepository.getEmojiList().collect {
+                resultResponse(it, ::onSuccessGetEmojis)
+            }
+        }
+    }
+
+    private fun onSuccessGetEmojis(result: GroupEmoji) {
+        updateState(uiState.value.copy(emojiList = result))
+    }
+
+    // 카테고리 생성
+    fun createCategory(name: String, emojiId: Long) {
+        viewModelScope.launch {
+            categoryRepository.createCategory(request = CreateCategoryRequest(name, emojiId)).collect {
+                resultResponse(it, ::onSuccessCreateCategory)
+            }
+        }
+    }
+
+    private fun onSuccessCreateCategory(result: Unit) {
+        getCategoryList()
     }
 
     /**---------------------------------------------오늘----------------------------------------------*/
