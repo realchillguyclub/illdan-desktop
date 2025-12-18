@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 abstract class BaseViewModel<STATE: UiState>(
     initialState: STATE
@@ -50,6 +51,9 @@ abstract class BaseViewModel<STATE: UiState>(
                 successCallback.invoke(data)
             },
             onFailure = { throwable ->
+                // CancellationException은 코루틴 취소 신호이므로 그대로 전파해 상위 코루틴이 취소되도록 한다
+                if (throwable is CancellationException) throw throwable
+
                 when(throwable) {
                     is DomainError.AuthExpired -> viewModelScope.launch { GlobalEventManager.navigateToLogin() }
                 }
