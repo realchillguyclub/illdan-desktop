@@ -2,9 +2,11 @@ package com.illdan.desktop.data.di
 
 import com.illdan.desktop.data.repository.AuthRepositoryImpl
 import com.illdan.desktop.data.repository.CategoryRepositoryImpl
+import com.illdan.desktop.data.repository.MemoRepositoryImpl
 import com.illdan.desktop.data.repository.TodoRepositoryImpl
 import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
+import com.illdan.desktop.domain.repository.MemoRepository
 import com.illdan.desktop.domain.repository.TodoRepository
 import org.koin.dsl.module
 
@@ -12,4 +14,5 @@ val repositoryModule = module {
     single<TodoRepository> { TodoRepositoryImpl(get(), get()) }
     single<AuthRepository> { AuthRepositoryImpl(get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
+    single<MemoRepository> { MemoRepositoryImpl(get()) }
 }
