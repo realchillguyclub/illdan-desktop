@@ -20,3 +20,7 @@ const val NEW_CATEGORY = "새 카테고리"
 // CategoryDialog
 const val ADD_CATEGORY_DIALOG_TITLE = "카테고리 추가하기"
 const val EDIT_CATEGORY_DIALOG_TITLE = "카테고리 수정하기"
+
+// Memo
+const val EMPTY_MEMO_TITLE = "새로운 메모"
+const val EMPTY_MEMO_CONTENT = "메모 추가"
