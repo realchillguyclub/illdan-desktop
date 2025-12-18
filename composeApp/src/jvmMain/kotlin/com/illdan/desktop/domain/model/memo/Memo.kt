@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Memo(
-    val id: Long = -1L,
+    val noteId: Long = -1L,
     val title: String = "",
     val content: String = "",
-    val createdAt: String = ""
+    val modifyDate: String = ""
 )

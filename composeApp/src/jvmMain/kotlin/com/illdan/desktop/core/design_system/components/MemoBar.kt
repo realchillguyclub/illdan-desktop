@@ -235,8 +235,8 @@ private fun MemoList(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        itemsIndexed(memoList, key = { _, it -> it.id }) { index, item ->
-            var itemVisible by rememberSaveable(item.id) { mutableStateOf(false) }
+        itemsIndexed(memoList, key = { _, it -> it.noteId }) { index, item ->
+            var itemVisible by rememberSaveable(item.noteId) { mutableStateOf(false) }
 
             LaunchedEffect(listVisible) {
                 if (listVisible) {
@@ -251,8 +251,8 @@ private fun MemoList(
             ) {
                 MemoItem(
                     memo = item,
-                    isSelected = selectedId == item.id,
-                    onClick = { onSelect(item.id) }
+                    isSelected = selectedId == item.noteId,
+                    onClick = { onSelect(item.noteId) }
                 )
             }
         }

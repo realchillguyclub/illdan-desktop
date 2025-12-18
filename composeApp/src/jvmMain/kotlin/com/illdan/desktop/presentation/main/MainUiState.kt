@@ -24,32 +24,32 @@ data class MainUiState(
     val isMemoShrink: Boolean = true,
     val memoList: List<Memo> = listOf(
         Memo(
-            id = 1,
+            noteId = 1,
             title = "첫번째 메모",
             content = "내용이요"
         ),
         Memo(
-            id = 2,
+            noteId = 2,
             title = "두번째 메모",
             content = "내용이요"
         ),
         Memo(
-            id = 3,
+            noteId = 3,
             title = "세번째 메모",
             content = "내용이요"
         ),
         Memo(
-            id = 4,
+            noteId = 4,
             title = "세번째 메모",
             content = "내용이요"
         ),
         Memo(
-            id = 5,
+            noteId = 5,
             title = "세번째 메모",
             content = "내용이요"
         ),
         Memo(
-            id = 6,
+            noteId = 6,
             title = "세번째 메모",
             content = "내용이요"
         )

@@ -17,18 +17,15 @@ import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
+import com.illdan.desktop.domain.repository.MemoRepository
 import com.illdan.desktop.domain.repository.TodoRepository
-import com.illdan.desktop.presentation.login.AuthEvent
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 
 class MainViewModel(
     private val authRepository: AuthRepository,
     private val todoRepository: TodoRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val memoRepository: MemoRepository
 ): BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
     private var tempId = 1L
@@ -289,7 +286,7 @@ class MainViewModel(
     // 메모 생성
     fun createMemo(input: Pair<String, String>) {
         val newMemo = Memo(
-            id = tempId++,
+            noteId = tempId++,
             title = input.first,
             content = input.second
         )
