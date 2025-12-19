@@ -8,7 +8,9 @@ import com.illdan.desktop.domain.enums.TodoType
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.category.GroupEmoji
 import com.illdan.desktop.domain.model.memo.Memo
+import com.illdan.desktop.domain.model.memo.MemoId
 import com.illdan.desktop.domain.model.request.category.CreateCategoryRequest
+import com.illdan.desktop.domain.model.request.memo.SaveMemoRequest
 import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.ReorderTodoListRequest
@@ -17,21 +19,18 @@ import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
+import com.illdan.desktop.domain.repository.MemoRepository
 import com.illdan.desktop.domain.repository.TodoRepository
-import com.illdan.desktop.presentation.login.AuthEvent
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 
 class MainViewModel(
     private val authRepository: AuthRepository,
     private val todoRepository: TodoRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val memoRepository: MemoRepository
 ): BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
-    private var tempId = 1L
+    private var tempId = -1L
 
     init {
         checkForFirstOpen()
@@ -287,12 +286,49 @@ class MainViewModel(
     /**---------------------------------------------메모----------------------------------------------*/
 
     // 메모 생성
-    fun createMemo(input: Pair<String, String>) {
-        val newMemo = Memo(
-            id = tempId++,
-            title = input.first,
-            content = input.second
-        )
+    fun createMemo() {
+        viewModelScope.launch {
+            memoRepository.saveMemo(request = SaveMemoRequest("", "")).collect {
+                resultResponse(it, ::onSuccessCreateMemo)
+            }
+        }
+    }
+
+    private fun onSuccessCreateMemo(result: MemoId) {
+        val curList = uiState.value.memoList.toMutableList()
+        val newMemo = Memo(noteId = result.memoId, title = "", content = "")
+        curList.add(0, newMemo)
+
+        updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = newMemo))
+    }
+
+    // 메모 저장
+    fun saveMemo(id: Long, input: Pair<String, String>) {
+        val memo = uiState.value.memoList.firstOrNull { it.noteId == id }
+
+        if (memo == null) {
+            logger.d { "수정할 메모를 찾지 못했습니다. id: $id" }
+            return
+        }
+
+        val updatedMemo = memo.copy(title = input.first, content = input.second)
+
+        val curList = uiState.value.memoList.toMutableList()
+        val index = curList.indexOfFirst { it.noteId == id }
+
+        if (index >= 0) curList.removeAt(index)
+        curList.add(0, updatedMemo)
+
+        updateState(uiState.value.copy(memoList = curList))
+    }
+
+    // 선택된 메모 업데이트
+    fun updateSelectedMemo(id: Long) {
+        val memo = uiState.value.memoList.firstOrNull { it.noteId == id }
+
+        if (memo == null) return
+
+        updateState(uiState.value.copy(selectedMemo = memo))
     }
 
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/

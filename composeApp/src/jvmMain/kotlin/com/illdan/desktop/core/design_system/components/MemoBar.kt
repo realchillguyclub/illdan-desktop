@@ -37,9 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.illdan.desktop.core.design_system.ADD_MEMO
 import com.illdan.desktop.core.design_system.AppTypo
+import com.illdan.desktop.core.design_system.EMPTY_MEMO_CONTENT
+import com.illdan.desktop.core.design_system.EMPTY_MEMO_TITLE
 import com.illdan.desktop.core.design_system.Gray00
 import com.illdan.desktop.core.design_system.Gray10
 import com.illdan.desktop.core.design_system.Gray100
@@ -60,10 +63,12 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun MemoBar(
     memoList: List<Memo>,
-    onMemoSubmit: (Pair<String, String>) -> Unit,
+    selectedMemo: Memo,
+    onMemoSubmit: (Long, Pair<String, String>) -> Unit,
+    onMemoSelected: (Long) -> Unit,
+    onAddClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedId by remember { mutableStateOf(-1L) }
 
     Row {
         Column(
@@ -74,14 +79,17 @@ fun MemoBar(
                 .padding(top = 24.dp, bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            AddMemoButton(onClick = { isExpanded = !isExpanded })
+            AddMemoButton(onClick = {
+                isExpanded = true
+                onAddClick()
+            })
 
             Spacer(Modifier.height(12.dp))
 
             MemoList(
                 memoList = memoList,
-                selectedId = selectedId,
-                onSelect = { selectedId = it }
+                selectedId = selectedMemo.noteId,
+                onSelect = onMemoSelected
             )
         }
 
@@ -91,7 +99,8 @@ fun MemoBar(
             exit = fadeOut() + shrinkHorizontally()
         ) {
             MemoExtension(
-                onSubmit = onMemoSubmit,
+                memo = selectedMemo,
+                onSubmit = { onMemoSubmit(selectedMemo.noteId, it) },
                 onBack = { isExpanded = false }
             )
         }
@@ -104,8 +113,8 @@ private fun MemoExtension(
     onSubmit: (Pair<String, String>) -> Unit,
     onBack: () -> Unit
 ) {
-    var title by remember { mutableStateOf(memo.title) }
-    var content by remember { mutableStateOf(memo.content) }
+    var title by remember(memo.noteId) { mutableStateOf(memo.title) }
+    var content by remember(memo.noteId) { mutableStateOf(memo.content) }
 
     Column(
         modifier = Modifier
@@ -145,7 +154,7 @@ private fun MemoExtension(
             isTitle = true,
             value = title,
             placeholder = PLACEHOLDER_MEMO_TITLE,
-            onValueChange = { title = it }
+            onValueChange = { title = it; onSubmit(title to content) }
         )
 
         Spacer(Modifier.height(20.dp))
@@ -158,7 +167,7 @@ private fun MemoExtension(
             isTitle = false,
             value = content,
             placeholder = PLACEHOLDER_MEMO_CONTENT,
-            onValueChange = { content = it },
+            onValueChange = { content = it; onSubmit(title to content) },
             modifier = Modifier.weight(1f)
         )
     }
@@ -235,8 +244,8 @@ private fun MemoList(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        itemsIndexed(memoList, key = { _, it -> it.id }) { index, item ->
-            var itemVisible by rememberSaveable(item.id) { mutableStateOf(false) }
+        itemsIndexed(memoList, key = { _, it -> it.noteId }) { index, item ->
+            var itemVisible by rememberSaveable(item.noteId) { mutableStateOf(false) }
 
             LaunchedEffect(listVisible) {
                 if (listVisible) {
@@ -251,8 +260,8 @@ private fun MemoList(
             ) {
                 MemoItem(
                     memo = item,
-                    isSelected = selectedId == item.id,
-                    onClick = { onSelect(item.id) }
+                    isSelected = selectedId == item.noteId,
+                    onClick = { onSelect(item.noteId) }
                 )
             }
         }
@@ -279,15 +288,19 @@ private fun MemoItem(
         horizontalAlignment = Alignment.Start
     ) {
         AppText(
-            text = memo.title,
+            text = memo.title.ifEmpty { EMPTY_MEMO_TITLE },
             style = AppTextStyle.smMedium,
-            color = Gray00
+            color = Gray00,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Spacer(Modifier.height(1.dp))
         AppText(
-            text = memo.content,
+            text = memo.content.ifEmpty { EMPTY_MEMO_CONTENT },
             style = AppTextStyle.smRegular,
-            color = Gray60
+            color = Gray60,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
