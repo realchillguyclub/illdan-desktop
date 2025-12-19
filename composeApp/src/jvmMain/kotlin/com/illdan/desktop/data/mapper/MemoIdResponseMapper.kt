@@ -8,7 +8,7 @@ object MemoIdResponseMapper: Mapper<MemoIdResponse, MemoId> {
     override fun responseToModel(response: MemoIdResponse?): MemoId {
         return response?.let {
             MemoId(
-                memoId = it.memoId
+                memoId = it.noteId
             )
         } ?: MemoId()
     }

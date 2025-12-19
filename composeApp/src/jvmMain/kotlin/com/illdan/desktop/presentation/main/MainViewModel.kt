@@ -299,7 +299,7 @@ class MainViewModel(
         val newMemo = Memo(noteId = result.memoId, title = "", content = "")
         curList.add(0, newMemo)
 
-        updateState(uiState.value.copy(memoList = curList, selectedMemo = newMemo))
+        updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = newMemo))
     }
 
     // 메모 저장
