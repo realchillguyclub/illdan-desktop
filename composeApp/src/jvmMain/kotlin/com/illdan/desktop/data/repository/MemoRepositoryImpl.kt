@@ -4,6 +4,7 @@ import com.illdan.desktop.core.network.NetworkClient
 import com.illdan.desktop.core.network.base.BaseRepository
 import com.illdan.desktop.data.mapper.MemoIdResponseMapper
 import com.illdan.desktop.data.mapper.MemoListResponseMapper
+import com.illdan.desktop.data.mapper.ModifiedMemoResponseMapper
 import com.illdan.desktop.domain.enums.HttpMethod
 import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.memo.MemoId
@@ -48,13 +49,13 @@ class MemoRepositoryImpl(
     override suspend fun updateMemo(
         memoId: Long,
         request: SaveMemoRequest
-    ): Flow<Result<MemoId>> = flow {
+    ): Flow<Result<Pair<Long, String>>> = flow {
         emit(
             fetchMapped(
                 method = HttpMethod.PUT,
                 path = "/notes/$memoId",
                 body = request,
-                mapper = MemoIdResponseMapper
+                mapper = ModifiedMemoResponseMapper
             )
         )
     }
