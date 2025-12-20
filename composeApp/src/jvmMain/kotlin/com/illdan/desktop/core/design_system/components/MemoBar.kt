@@ -313,6 +313,18 @@ private fun MemoItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val modifiedDate = remember(memo.modifyDate) {
+        val parts = memo.modifyDate.split("-")
+        if (parts.size >= 3) {
+            val yy = parts[0].takeLast(2)
+            val mm = parts[1]
+            val dd = parts[2]
+            "$yy.$mm.$dd"
+        } else {
+            memo.modifyDate.replace("-", ".")
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -328,9 +340,17 @@ private fun MemoItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-        Spacer(Modifier.height(1.dp))
+        Spacer(Modifier.height(4.dp))
         AppText(
             text = memo.content.ifEmpty { EMPTY_MEMO_CONTENT },
+            style = AppTextStyle.smRegular,
+            color = Gray60,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(Modifier.height(4.dp))
+        AppText(
+            text = modifiedDate,
             style = AppTextStyle.smRegular,
             color = Gray60,
             maxLines = 1,
