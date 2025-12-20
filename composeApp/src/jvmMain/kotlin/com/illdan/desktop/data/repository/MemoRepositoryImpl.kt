@@ -35,4 +35,13 @@ class MemoRepositoryImpl(
             )
         )
     }
+
+    override suspend fun deleteMemo(memoId: Long): Flow<Result<Unit>> = flow {
+        emit(
+            fetch(
+                method = HttpMethod.DELETE,
+                path = "/notes/$memoId"
+            )
+        )
+    }
 }
