@@ -359,6 +359,8 @@ class MainViewModel(
         val curList = uiState.value.memoList.toMutableList()
         val index = curList.indexOfFirst { it.noteId == memoId }
 
+        if (index == -1) return
+
         curList.removeAt(index)
 
         updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = emptyMemo))
