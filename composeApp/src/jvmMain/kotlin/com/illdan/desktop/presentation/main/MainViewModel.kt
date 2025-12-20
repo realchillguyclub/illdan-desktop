@@ -344,6 +344,31 @@ class MainViewModel(
         updateState(uiState.value.copy(memoList = result))
     }
 
+    // 메모 삭제
+    fun deleteMemo(memoId: Long) {
+        deleteMemoInUI(memoId)
+
+        viewModelScope.launch {
+            memoRepository.deleteMemo(memoId).collect {
+                resultResponse(it, {}, ::onFailDeleteMemo)
+            }
+        }
+    }
+
+    private fun deleteMemoInUI(memoId: Long) {
+        val curList = uiState.value.memoList.toMutableList()
+        val index = curList.indexOfFirst { it.noteId == memoId }
+
+        curList.removeAt(index)
+
+        updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = emptyMemo))
+    }
+
+    private fun onFailDeleteMemo(e: Throwable) {
+        logger.e { "메모 삭제 실패: ${e.message}" }
+        getMemoList()
+    }
+
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/
     fun toggleSideBarShrink() {
         updateState(uiState.value.copy(isSideBarShrink = !uiState.value.isSideBarShrink))

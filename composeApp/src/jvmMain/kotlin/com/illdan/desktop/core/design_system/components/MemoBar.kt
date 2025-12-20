@@ -69,7 +69,8 @@ fun MemoBar(
     selectedMemo: Memo,
     onMemoSubmit: (Long, Pair<String, String>) -> Unit,
     onMemoSelected: (Long) -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onDeleteClick: (Long) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
@@ -115,7 +116,11 @@ fun MemoBar(
             MemoExtension(
                 memo = selectedMemo,
                 onSubmit = { onMemoSubmit(selectedMemo.noteId, it) },
-                onBack = { isExpanded = false }
+                onBack = { isExpanded = false },
+                onDeleteClick = {
+                    onDeleteClick(it)
+                    isExpanded = false
+                }
             )
         }
     }
@@ -131,7 +136,8 @@ fun MemoBar(
 private fun MemoExtension(
     memo: Memo = Memo(),
     onSubmit: (Pair<String, String>) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onDeleteClick: (Long) -> Unit
 ) {
     var title by remember(memo.noteId) { mutableStateOf(memo.title) }
     var content by remember(memo.noteId) { mutableStateOf(memo.content) }
@@ -161,11 +167,17 @@ private fun MemoExtension(
                 )
             }
             Spacer(Modifier.weight(1f))
-            Image(
-                painter = painterResource(Res.drawable.ic_trash),
-                contentDescription = null,
+
+            IconButton(
+                onClick = { onDeleteClick(memo.noteId) },
                 modifier = Modifier.size(24.dp)
-            )
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_trash),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
 
         Spacer(Modifier.height(32.dp))
