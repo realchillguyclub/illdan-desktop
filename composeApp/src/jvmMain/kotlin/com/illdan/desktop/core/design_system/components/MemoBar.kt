@@ -20,12 +20,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +72,13 @@ fun MemoBar(
     onAddClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(memoList.firstOrNull()?.noteId) {
+        if (memoList.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+    }
 
     Row {
         Column(
@@ -89,7 +99,11 @@ fun MemoBar(
             MemoList(
                 memoList = memoList,
                 selectedId = selectedMemo.noteId,
-                onSelect = onMemoSelected
+                listState = listState,
+                onSelect = {
+                    onMemoSelected(it)
+                    isExpanded = true
+                }
             )
         }
 
@@ -103,6 +117,12 @@ fun MemoBar(
                 onSubmit = { onMemoSubmit(selectedMemo.noteId, it) },
                 onBack = { isExpanded = false }
             )
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            onMemoSelected(-1L)
         }
     }
 }
@@ -236,11 +256,13 @@ private fun AddMemoButton(
 private fun MemoList(
     memoList: List<Memo>,
     selectedId: Long,
+    listState: LazyListState,
     onSelect: (Long) -> Unit
 ) {
     var listVisible by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxWidth()
     ) {

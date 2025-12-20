@@ -30,7 +30,7 @@ class MainViewModel(
     private val memoRepository: MemoRepository
 ): BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
-    private var tempId = -1L
+    private val emptyMemo = Memo()
 
     init {
         checkForFirstOpen()
@@ -326,9 +326,22 @@ class MainViewModel(
     fun updateSelectedMemo(id: Long) {
         val memo = uiState.value.memoList.firstOrNull { it.noteId == id }
 
-        if (memo == null) return
+        if (memo == null) {
+            updateState(uiState.value.copy(selectedMemo = emptyMemo))
+        } else updateState(uiState.value.copy(selectedMemo = memo))
+    }
 
-        updateState(uiState.value.copy(selectedMemo = memo))
+    // 메모 리스트 조회
+    fun getMemoList() {
+        viewModelScope.launch {
+            memoRepository.getMemoList().collect {
+                resultResponse(it, ::onSuccessGetMemoList)
+            }
+        }
+    }
+
+    private fun onSuccessGetMemoList(result: List<Memo>) {
+        updateState(uiState.value.copy(memoList = result))
     }
 
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/
@@ -337,6 +350,7 @@ class MainViewModel(
     }
 
     fun toggleMemoShrink() {
+        if (uiState.value.memoList.isEmpty()) getMemoList()
         updateState(uiState.value.copy(isMemoShrink = !uiState.value.isMemoShrink))
     }
 }
