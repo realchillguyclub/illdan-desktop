@@ -21,6 +21,8 @@ import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
 import com.illdan.desktop.domain.repository.MemoRepository
 import com.illdan.desktop.domain.repository.TodoRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -31,6 +33,7 @@ class MainViewModel(
 ): BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
     private val emptyMemo = Memo()
+    private val saveJobs = mutableMapOf<Long, Job>()
 
     init {
         checkForFirstOpen()
@@ -313,13 +316,28 @@ class MainViewModel(
 
         val updatedMemo = memo.copy(title = input.first, content = input.second)
 
-        val curList = uiState.value.memoList.toMutableList()
-        val index = curList.indexOfFirst { it.noteId == id }
+        updateMemoInUi(updatedMemo)
 
-        if (index >= 0) curList.removeAt(index)
-        curList.add(0, updatedMemo)
+        // 서버 저장은 debounce
+        saveJobs[id]?.cancel()
+        saveJobs[id] = viewModelScope.launch {
+            delay(400) // debounce window
+            memoRepository
+                .updateMemo(updatedMemo.noteId, SaveMemoRequest(updatedMemo.title, updatedMemo.content))
+                .collect { result ->
+                    resultResponse(result, {})
+                }
+        }
+    }
 
-        updateState(uiState.value.copy(memoList = curList))
+    private fun updateMemoInUi(updatedMemo: Memo) {
+        val cur = uiState.value.memoList.toMutableList()
+        val index = cur.indexOfFirst { it.noteId == updatedMemo.noteId }
+        if (index == -1) return
+
+        cur[index] = updatedMemo
+
+        updateState(uiState.value.copy(memoList = cur))
     }
 
     // 선택된 메모 업데이트
