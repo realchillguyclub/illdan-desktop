@@ -325,9 +325,17 @@ class MainViewModel(
             memoRepository
                 .updateMemo(updatedMemo.noteId, SaveMemoRequest(updatedMemo.title, updatedMemo.content))
                 .collect { result ->
-                    resultResponse(result, {})
+                    resultResponse(result, ::onSuccessSaveMemo)
                 }
         }
+    }
+
+    private fun onSuccessSaveMemo(result: Pair<Long, String>) {
+        val updatedList = uiState.value.memoList.map {
+            if (it.noteId == result.first) it.copy(modifyDate = result.second) else it
+        }
+
+        updateStateSync(uiState.value.copy(memoList = updatedList))
     }
 
     private fun updateMemoInUi(updatedMemo: Memo) {
