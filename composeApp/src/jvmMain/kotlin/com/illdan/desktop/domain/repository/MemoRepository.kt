@@ -9,4 +9,5 @@ interface MemoRepository {
     suspend fun saveMemo(request: SaveMemoRequest): Flow<Result<MemoId>>
     suspend fun getMemoList(): Flow<Result<List<Memo>>>
     suspend fun deleteMemo(memoId: Long): Flow<Result<Unit>>
+    suspend fun updateMemo(memoId: Long, request: SaveMemoRequest): Flow<Result<MemoId>>
 }

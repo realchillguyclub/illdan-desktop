@@ -44,4 +44,18 @@ class MemoRepositoryImpl(
             )
         )
     }
+
+    override suspend fun updateMemo(
+        memoId: Long,
+        request: SaveMemoRequest
+    ): Flow<Result<MemoId>> = flow {
+        emit(
+            fetchMapped(
+                method = HttpMethod.PUT,
+                path = "/notes/$memoId",
+                body = request,
+                mapper = MemoIdResponseMapper
+            )
+        )
+    }
 }
