@@ -5,6 +5,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -44,8 +45,8 @@ object DateTimeFormatter {
         val diff = diffBetweenDate(todayStr, deadline)
 
         return when {
-            diff > 0 -> "D-$diff"
-            diff < 0 -> "D+$diff"
+            diff > 0 -> "D-${abs(diff)}"
+            diff < 0 -> "D+${abs(diff)}"
             else -> "D-Day"
         }
     }
