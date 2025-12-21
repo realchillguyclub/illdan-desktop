@@ -103,6 +103,7 @@ fun MainScreen(
         onMemoSubmit = viewModel::saveMemo,
         onMemoSelected = viewModel::updateSelectedMemo,
         onMemoAddClick = viewModel::createMemo,
+        onDeleteMemo = viewModel::deleteMemo,
         onBookmarkClick = viewModel::updateTodoBookmark,
         onCreateCategory = viewModel::createCategory
     )
@@ -123,6 +124,7 @@ private fun MainContent(
     onMemoSubmit: (Long, Pair<String, String>) -> Unit,
     onMemoSelected: (Long) -> Unit,
     onMemoAddClick: () -> Unit,
+    onDeleteMemo: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit,
     onCreateCategory: (String, Long) -> Unit
 ) {
@@ -155,7 +157,8 @@ private fun MainContent(
                     selectedMemo = uiState.selectedMemo,
                     onMemoSubmit = onMemoSubmit,
                     onMemoSelected = onMemoSelected,
-                    onAddClick = onMemoAddClick
+                    onAddClick = onMemoAddClick,
+                    onDeleteClick = onDeleteMemo
                 )
             }
 

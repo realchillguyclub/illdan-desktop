@@ -21,6 +21,8 @@ import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
 import com.illdan.desktop.domain.repository.MemoRepository
 import com.illdan.desktop.domain.repository.TodoRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -31,6 +33,7 @@ class MainViewModel(
 ): BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
     private val emptyMemo = Memo()
+    private val saveJobs = mutableMapOf<Long, Job>()
 
     init {
         checkForFirstOpen()
@@ -313,13 +316,36 @@ class MainViewModel(
 
         val updatedMemo = memo.copy(title = input.first, content = input.second)
 
-        val curList = uiState.value.memoList.toMutableList()
-        val index = curList.indexOfFirst { it.noteId == id }
+        updateMemoInUi(updatedMemo)
 
-        if (index >= 0) curList.removeAt(index)
-        curList.add(0, updatedMemo)
+        // 서버 저장은 debounce
+        saveJobs[id]?.cancel()
+        saveJobs[id] = viewModelScope.launch {
+            delay(400) // debounce window
+            memoRepository
+                .updateMemo(updatedMemo.noteId, SaveMemoRequest(updatedMemo.title, updatedMemo.content))
+                .collect { result ->
+                    resultResponse(result, ::onSuccessSaveMemo)
+                }
+        }
+    }
 
-        updateState(uiState.value.copy(memoList = curList))
+    private fun onSuccessSaveMemo(result: Pair<Long, String>) {
+        val updatedList = uiState.value.memoList.map {
+            if (it.noteId == result.first) it.copy(modifyDate = result.second) else it
+        }
+
+        updateStateSync(uiState.value.copy(memoList = updatedList))
+    }
+
+    private fun updateMemoInUi(updatedMemo: Memo) {
+        val cur = uiState.value.memoList.toMutableList()
+        val index = cur.indexOfFirst { it.noteId == updatedMemo.noteId }
+        if (index == -1) return
+
+        cur[index] = updatedMemo
+
+        updateState(uiState.value.copy(memoList = cur))
     }
 
     // 선택된 메모 업데이트
@@ -342,6 +368,33 @@ class MainViewModel(
 
     private fun onSuccessGetMemoList(result: List<Memo>) {
         updateState(uiState.value.copy(memoList = result))
+    }
+
+    // 메모 삭제
+    fun deleteMemo(memoId: Long) {
+        deleteMemoInUI(memoId)
+
+        viewModelScope.launch {
+            memoRepository.deleteMemo(memoId).collect {
+                resultResponse(it, {}, ::onFailDeleteMemo)
+            }
+        }
+    }
+
+    private fun deleteMemoInUI(memoId: Long) {
+        val curList = uiState.value.memoList.toMutableList()
+        val index = curList.indexOfFirst { it.noteId == memoId }
+
+        if (index == -1) return
+
+        curList.removeAt(index)
+
+        updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = emptyMemo))
+    }
+
+    private fun onFailDeleteMemo(e: Throwable) {
+        logger.e { "메모 삭제 실패: ${e.message}" }
+        getMemoList()
     }
 
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/
