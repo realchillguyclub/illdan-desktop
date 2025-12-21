@@ -9,11 +9,13 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,7 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.illdan.desktop.core.design_system.ADD_MEMO
 import com.illdan.desktop.core.design_system.AppTypo
@@ -62,6 +70,7 @@ import illdandesktop.composeapp.generated.resources.ic_plus
 import illdandesktop.composeapp.generated.resources.ic_trash
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
+import java.awt.Cursor
 
 @Composable
 fun MemoBar(
@@ -74,6 +83,7 @@ fun MemoBar(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
+    var extensionWidth by remember { mutableStateOf(340.dp) }
 
     LaunchedEffect(memoList.firstOrNull()?.noteId) {
         if (memoList.isNotEmpty()) {
@@ -115,8 +125,13 @@ fun MemoBar(
         ) {
             MemoExtension(
                 memo = selectedMemo,
+                width = extensionWidth,
+                onResize = { extensionWidth = it },
                 onSubmit = { onMemoSubmit(selectedMemo.noteId, it) },
-                onBack = { isExpanded = false },
+                onBack = {
+                    onMemoSelected(-1L)
+                    isExpanded = false
+                },
                 onDeleteClick = {
                     onDeleteClick(it)
                     isExpanded = false
@@ -135,72 +150,115 @@ fun MemoBar(
 @Composable
 private fun MemoExtension(
     memo: Memo = Memo(),
+    width: Dp,
+    onResize: (Dp) -> Unit,
     onSubmit: (Pair<String, String>) -> Unit,
     onBack: () -> Unit,
     onDeleteClick: (Long) -> Unit
 ) {
     var title by remember(memo.noteId) { mutableStateOf(memo.title) }
     var content by remember(memo.noteId) { mutableStateOf(memo.content) }
+    val density = LocalDensity.current
+    val minWidth = 340.dp
+    val minWidthPx = with(density) { minWidth.toPx() }
+    val latestWidthPx by rememberUpdatedState(with(density) { width.toPx() })
 
-    Column(
+    Box(
         modifier = Modifier
-            .width(340.dp)
+            .width(width)
             .fillMaxHeight()
-            .background(Gray100)
-            .padding(horizontal = 16.dp, vertical = 24.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp)
-                .padding(end = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .background(Gray100)
+                .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier.size(30.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+                    .padding(end = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_left),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(Modifier.weight(1f))
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_left),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Spacer(Modifier.weight(1f))
 
-            IconButton(
-                onClick = { onDeleteClick(memo.noteId) },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Image(
-                    painter = painterResource(Res.drawable.ic_trash),
-                    contentDescription = null,
+                IconButton(
+                    onClick = { onDeleteClick(memo.noteId) },
                     modifier = Modifier.size(24.dp)
-                )
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_trash),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
+
+            Spacer(Modifier.height(32.dp))
+
+            ExtensionTextField(
+                isTitle = true,
+                value = title,
+                placeholder = PLACEHOLDER_MEMO_TITLE,
+                onValueChange = { title = it; onSubmit(title to content) }
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp), color = Gray95)
+
+            Spacer(Modifier.height(20.dp))
+
+            ExtensionTextField(
+                isTitle = false,
+                value = content,
+                placeholder = PLACEHOLDER_MEMO_CONTENT,
+                onValueChange = { content = it; onSubmit(title to content) },
+                modifier = Modifier.weight(1f)
+            )
         }
 
-        Spacer(Modifier.height(32.dp))
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(8.dp)
+                .fillMaxHeight()
+                .pointerHoverIcon(
+                    PointerIcon(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR))
+                )
+                .pointerInput(Unit) {
+                    var startWidthPx = 0f
+                    var accumulatedPx = 0f
 
-        ExtensionTextField(
-            isTitle = true,
-            value = title,
-            placeholder = PLACEHOLDER_MEMO_TITLE,
-            onValueChange = { title = it; onSubmit(title to content) }
-        )
+                    detectDragGestures(
+                        onDragStart = {
+                            startWidthPx = latestWidthPx
+                            accumulatedPx = 0f
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
 
-        Spacer(Modifier.height(20.dp))
+                            accumulatedPx += dragAmount.x
 
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp), color = Gray95)
+                            val nextPx = (startWidthPx + accumulatedPx)
+                                .coerceAtLeast(minWidthPx)
 
-        Spacer(Modifier.height(20.dp))
-
-        ExtensionTextField(
-            isTitle = false,
-            value = content,
-            placeholder = PLACEHOLDER_MEMO_CONTENT,
-            onValueChange = { content = it; onSubmit(title to content) },
-            modifier = Modifier.weight(1f)
+                            val nextDp = with(density) { nextPx.toDp() }
+                            onResize(nextDp)
+                        }
+                    )
+                }
         )
     }
 }
