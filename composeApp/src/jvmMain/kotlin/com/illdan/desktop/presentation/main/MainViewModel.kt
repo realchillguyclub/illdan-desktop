@@ -421,9 +421,6 @@ class MainViewModel(
     }
 
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/
-    fun toggleSideBarShrink() {
-        updateState(uiState.value.copy(isSideBarShrink = !uiState.value.isSideBarShrink))
-    }
 
     fun toggleMemoShrink() {
         if (uiState.value.memoList.isEmpty()) getMemoList()
