@@ -5,6 +5,7 @@ const val WORD_BOOKMARK = "중요"
 
 const val ACTION_CLOSE = "닫기"
 const val ACTION_CREATE = "생성하기"
+const val ACTION_DELETE = "삭제하기"
 
 const val PLACEHOLDER_TEXT_FILED = "할 일 추가하기..."
 const val PLACEHOLDER_MEMO_TITLE = "제목을 추가하세요."
