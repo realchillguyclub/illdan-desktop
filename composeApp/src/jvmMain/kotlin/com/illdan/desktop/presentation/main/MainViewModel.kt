@@ -286,6 +286,29 @@ class MainViewModel(
         }
     }
 
+    /**---------------------------------------------할 일 삭제----------------------------------------------*/
+
+    fun deleteTodo(id: Long) {
+        viewModelScope.launch {
+            deleteTodoInUI(id)
+
+            resultResponse(
+                response = todoRepository.deleteTodo(id),
+                successCallback = ::onSuccessDeleteTodo
+            )
+        }
+    }
+
+    private fun deleteTodoInUI(id: Long) {
+        val newList = uiState.value.currentTodoList.filter { it.todoId != id }
+
+        updateStateSync(uiState.value.copy(currentTodoList = newList))
+    }
+
+    private fun onSuccessDeleteTodo(result: Unit) {
+        logger.d { "할 일 삭제 성공" }
+    }
+
     /**---------------------------------------------메모----------------------------------------------*/
 
     // 메모 생성

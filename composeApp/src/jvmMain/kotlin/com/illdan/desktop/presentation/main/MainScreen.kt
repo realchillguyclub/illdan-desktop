@@ -96,6 +96,7 @@ fun MainScreen(
         onTodayClicked = viewModel::getTodayList,
         onMove = { from, to -> viewModel.onMove(from, to) },
         onSwiped = viewModel::swipeTodo,
+        onDeleted = viewModel::deleteTodo,
         onCheckedChange = viewModel::updateTodoStatus,
         onAllTodoClick = { if (!uiState.isMemoShrink) viewModel.toggleMemoShrink() },
         onMemoClick = viewModel::toggleMemoShrink,
@@ -116,6 +117,7 @@ private fun MainContent(
     onTodayClicked: () -> Unit,
     onMove: (Int, Int) -> Unit,
     onSwiped: (Long) -> Unit,
+    onDeleted: (Long) -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
@@ -201,6 +203,7 @@ private fun MainContent(
                         isToday = uiState.currentCategory.id == -2L,
                         onMove = onMove,
                         onSwiped =onSwiped,
+                        onDeleted = onDeleted,
                         onCheckedChange = onCheckedChange,
                         onBookmarkClick = onBookmarkClick
                     )
@@ -285,6 +288,7 @@ private fun TodoList(
     onMove: (Int, Int) -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onSwiped: (Long) -> Unit,
+    onDeleted: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit
 ) {
     val seenIds = remember { mutableStateListOf<Long>() }
@@ -378,7 +382,8 @@ private fun TodoList(
                                 }
                             },
                             onBookmarkClick = onBookmarkClick,
-                            onTodoMenuClick = { selectedTodoId = it }
+                            onTodoMenuClick = { selectedTodoId = it },
+                            onDeleted = { selectedTodoId = -1L; onDeleted(it) }
                         )
                     }
                 }

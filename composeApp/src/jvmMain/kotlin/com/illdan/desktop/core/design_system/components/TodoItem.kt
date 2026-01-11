@@ -85,7 +85,8 @@ fun TodoItem(
     onCheckedChange: (TodoStatus, Long) -> Unit = { _, _ -> },
     onBookmarkClick: (Long) -> Unit = {},
     onTodoMenuClick: (Long) -> Unit = {},
-    onSwiped: (Long) -> Unit
+    onSwiped: (Long) -> Unit,
+    onDeleted: (Long) -> Unit = {}
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -219,7 +220,7 @@ fun TodoItem(
                     .offset(x = (-40).dp, y = 20.dp)
                     .background(Gray90, RoundedCornerShape(12.dp))
                     .clip(RoundedCornerShape(12.dp))
-                    .clickable { onTodoMenuClick(-1L) }
+                    .clickable { onDeleted(item.todoId) }
                     .padding(horizontal = 16.dp, vertical = 10.dp)
                     .align(Alignment.CenterEnd),
                 verticalAlignment = Alignment.CenterVertically
