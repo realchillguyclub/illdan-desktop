@@ -106,4 +106,21 @@ class AuthViewModel(
             logger.i { "Auth success: $result" }
         }
     }
+
+    fun logout() {
+        viewModelScope.launch {
+            resultResponse(
+                response = authRepository.logout(),
+                successCallback = ::onSuccessLogout
+            )
+        }
+    }
+
+    private fun onSuccessLogout(result: Unit) {
+        viewModelScope.launch {
+            authRepository.clearToken()
+
+            emitEventFlow(AuthEvent.NavigateToLogin)
+        }
+    }
 }

@@ -65,6 +65,8 @@ import com.illdan.desktop.core.design_system.components.TodoItem
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
+import com.illdan.desktop.presentation.login.AuthEvent
+import com.illdan.desktop.presentation.login.AuthViewModel
 import illdandesktop.composeapp.generated.resources.Res
 import illdandesktop.composeapp.generated.resources.ic_top_banner
 import kotlinx.coroutines.delay
@@ -77,6 +79,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel(),
     navigateToLoginScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -85,6 +88,7 @@ fun MainScreen(
         viewModel.eventFlow.collect { event ->
             when(event) {
                 is MainEvent.NavigateToLogin -> navigateToLoginScreen()
+                is AuthEvent.NavigateToLogin -> navigateToLoginScreen()
             }
         }
     }
