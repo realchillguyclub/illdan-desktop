@@ -300,6 +300,7 @@ private fun TodoList(
     var previousSize by remember { mutableIntStateOf(todoList.size) }
     val scope = rememberCoroutineScope()
     val swipeAnimDuration = 220
+    var selectedTodoId by remember { mutableStateOf(-1L) }  // 메뉴가 활성화된 투두 ID 저장
 
     data class ScrollSnapshot(val index: Int, val offset: Int)
     var pendingScrollRestore by remember { mutableStateOf<ScrollSnapshot?>(null) }
@@ -366,6 +367,7 @@ private fun TodoList(
                             isDeadlineDateMode = false,
                             modifier = Modifier.fillMaxWidth(),
                             isToday = isToday,
+                            isMenuExpanded = selectedTodoId == item.todoId,
                             onCheckedChange = { status, id ->
                                 val index = listState.firstVisibleItemIndex
                                 val offset = listState.firstVisibleItemScrollOffset
@@ -379,7 +381,8 @@ private fun TodoList(
                                     onSwiped(it)
                                 }
                             },
-                            onBookmarkClick = onBookmarkClick
+                            onBookmarkClick = onBookmarkClick,
+                            onTodoMenuClick = { selectedTodoId = it }
                         )
                     }
                 }
