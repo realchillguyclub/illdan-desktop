@@ -96,7 +96,6 @@ fun MainScreen(
         onTodayClicked = viewModel::getTodayList,
         onMove = { from, to -> viewModel.onMove(from, to) },
         onSwiped = viewModel::swipeTodo,
-        onShrinkChange = viewModel::toggleSideBarShrink,
         onCheckedChange = viewModel::updateTodoStatus,
         onAllTodoClick = { if (!uiState.isMemoShrink) viewModel.toggleMemoShrink() },
         onMemoClick = viewModel::toggleMemoShrink,
@@ -117,7 +116,6 @@ private fun MainContent(
     onTodayClicked: () -> Unit,
     onMove: (Int, Int) -> Unit,
     onSwiped: (Long) -> Unit,
-    onShrinkChange: () -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
@@ -140,8 +138,6 @@ private fun MainContent(
                 .fillMaxSize()
         ) {
             SideBar(
-                isShrink = uiState.isSideBarShrink,
-                onShrinkChange = onShrinkChange,
                 onAllTodoClick = onAllTodoClick,
                 onMemoClick = onMemoClick
             )
