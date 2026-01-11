@@ -10,6 +10,7 @@ import com.illdan.desktop.domain.model.auth.AuthInfo
 import com.illdan.desktop.domain.model.auth.AuthTokens
 import com.illdan.desktop.domain.model.auth.AuthUrl
 import com.illdan.desktop.domain.model.request.auth.LoginRequest
+import com.illdan.desktop.domain.model.request.auth.LogoutRequest
 import com.illdan.desktop.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -41,6 +42,14 @@ class AuthRepositoryImpl(
                 mapper = AuthInfoResponseMapper,
                 addAuthHeader = false
             )
+        )
+    }
+
+    override suspend fun logout(): Result<Unit> {
+        return fetch(
+            method = HttpMethod.POST,
+            path = "/auth/logout",
+            body = LogoutRequest()
         )
     }
 
