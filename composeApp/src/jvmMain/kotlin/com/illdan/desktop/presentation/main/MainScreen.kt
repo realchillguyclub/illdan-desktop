@@ -109,7 +109,8 @@ fun MainScreen(
         onMemoAddClick = viewModel::createMemo,
         onDeleteMemo = viewModel::deleteMemo,
         onBookmarkClick = viewModel::updateTodoBookmark,
-        onCreateCategory = viewModel::createCategory
+        onCreateCategory = viewModel::createCategory,
+        onLogout = authViewModel::logout
     )
 }
 
@@ -130,7 +131,8 @@ private fun MainContent(
     onMemoAddClick: () -> Unit,
     onDeleteMemo: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit,
-    onCreateCategory: (String, Long) -> Unit
+    onCreateCategory: (String, Long) -> Unit,
+    onLogout: () -> Unit
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
 
@@ -145,7 +147,8 @@ private fun MainContent(
         ) {
             SideBar(
                 onAllTodoClick = onAllTodoClick,
-                onMemoClick = onMemoClick
+                onMemoClick = onMemoClick,
+                onLogout = onLogout
             )
 
             AnimatedVisibility(
