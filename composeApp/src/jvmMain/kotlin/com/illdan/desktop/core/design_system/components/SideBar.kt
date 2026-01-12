@@ -130,34 +130,25 @@ fun SettingsMenuPopup(
 ) {
     if (!show) return
 
-    val shape = RoundedCornerShape(12.dp)
-
-    Popup(
+    PopupMenu(
         alignment = Alignment.TopStart,
         offset = IntOffset(x = 108, y = -120),
-        onDismissRequest = onDismiss,
-        properties = PopupProperties(focusable = true)
+        containerColor = Gray100,
+        onDismiss = onDismiss
     ) {
-        Surface(
-            shape = shape,
-            color = Gray100,
-            tonalElevation = 0.dp,
-            shadowElevation = 8.dp
+        Column(
+            modifier = Modifier.widthIn(max = 160.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.widthIn(max = 160.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                MenuItem(
-                    text = CHECK_VERSION,
-                    onClick = { onCheckUpdate(); onDismiss() }
-                )
-                HorizontalDivider(color = Gray95, thickness = 1.dp)
-                MenuItem(
-                    text = WORD_LOGOUT,
-                    onClick = { onLogout(); onDismiss() }
-                )
-            }
+            MenuItem(
+                text = CHECK_VERSION,
+                onClick = { onCheckUpdate(); onDismiss() }
+            )
+            HorizontalDivider(color = Gray95, thickness = 1.dp)
+            MenuItem(
+                text = WORD_LOGOUT,
+                onClick = { onLogout(); onDismiss() }
+            )
         }
     }
 }

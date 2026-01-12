@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import coil3.compose.AsyncImage
@@ -215,27 +216,18 @@ fun TodoItem(
         }
 
         if (isMenuExpanded) {
-            Row(
-                modifier = Modifier
-                    .offset(x = (-40).dp, y = 20.dp)
-                    .background(Gray90, RoundedCornerShape(12.dp))
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { onDeleted(item.todoId) }
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .align(Alignment.CenterEnd),
-                verticalAlignment = Alignment.CenterVertically
+            PopupMenu(
+                alignment = Alignment.CenterEnd,
+                offset = IntOffset(x = -40, y = 30),
+                containerColor = Gray90,
+                onDismiss = { onTodoMenuClick(-1L) }
             ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_trash),
-                    contentDescription = null,
-                    tint = Warning40,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                AppText(
+                PopupMenuItem(
+                    icon = painterResource(Res.drawable.ic_trash),
+                    iconColor = Warning40,
                     text = ACTION_DELETE,
-                    style = AppTextStyle.smMedium,
-                    color = Warning40
+                    textColor = Warning40,
+                    onClick = { onDeleted(item.todoId) }
                 )
             }
         }
