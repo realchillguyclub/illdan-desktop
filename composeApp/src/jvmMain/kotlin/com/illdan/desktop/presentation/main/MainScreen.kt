@@ -88,6 +88,13 @@ fun MainScreen(
         viewModel.eventFlow.collect { event ->
             when(event) {
                 is MainEvent.NavigateToLogin -> navigateToLoginScreen()
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        authViewModel.eventFlow.collect { event ->
+            when(event) {
                 is AuthEvent.NavigateToLogin -> navigateToLoginScreen()
             }
         }
