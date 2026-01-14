@@ -4,18 +4,27 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
@@ -23,17 +32,24 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import com.illdan.desktop.core.design_system.ACTION_DELETE
+import com.illdan.desktop.core.design_system.ACTION_EDIT
 import com.illdan.desktop.core.design_system.Gray00
+import com.illdan.desktop.core.design_system.Gray30
 import com.illdan.desktop.core.design_system.Gray40
 import com.illdan.desktop.core.design_system.Gray50
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.Gray95
+import com.illdan.desktop.core.design_system.Warning40
 import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.model.category.Category
 import illdandesktop.composeapp.generated.resources.Res
 import illdandesktop.composeapp.generated.resources.ic_all
+import illdandesktop.composeapp.generated.resources.ic_pen
 import illdandesktop.composeapp.generated.resources.ic_star
+import illdandesktop.composeapp.generated.resources.ic_three_dot
 import illdandesktop.composeapp.generated.resources.ic_today
+import illdandesktop.composeapp.generated.resources.ic_trash
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -49,56 +65,96 @@ fun CategoryListItem(
             .components { add(SvgDecoder.Factory()) }
             .build()
     }
+    var showPopup by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier
-            .width(180.dp)
-            .background(if (isSelected) Gray90 else Gray95, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-            .clickable(
-                indication = null,
-                interactionSource = interactionSource,
-                onClick = onClick
+    Box {
+        Row(
+            modifier = Modifier
+                .width(180.dp)
+                .background(if (isSelected) Gray90 else Gray95, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                .clickable(
+                    indication = null,
+                    interactionSource = interactionSource,
+                    onClick = onClick
+                )
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            when (category.id) {
+                -2L -> Image(
+                    painter = painterResource(Res.drawable.ic_today),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                -1L -> Image(
+                    painter = painterResource(Res.drawable.ic_all),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                0L -> Image(
+                    painter = painterResource(Res.drawable.ic_star),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                else -> AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(category.imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    imageLoader = imageLoader,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            AppText(
+                text = category.name,
+                style = AppTextStyle.mdMedium,
+                color = if (isSelected) Gray00 else Gray40,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                textAlign = TextAlign.Start,
+                overflow = TextOverflow.Ellipsis
             )
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        when (category.id) {
-            -2L -> Image(
-                painter = painterResource(Res.drawable.ic_today),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            -1L -> Image(
-                painter = painterResource(Res.drawable.ic_all),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            0L -> Image(
-                painter = painterResource(Res.drawable.ic_star),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            else -> AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(category.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                imageLoader = imageLoader,
-                modifier = Modifier.size(20.dp)
-            )
+
+            if (isSelected && category.id !in listOf(-2L, -1L, 0L)) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_three_dot),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp).clip(CircleShape).clickable { showPopup = !showPopup }
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        if (showPopup) {
+            PopupMenu(
+                alignment = Alignment.BottomEnd,
+                offset = IntOffset(x = 10, y = 120),
+                containerColor = Gray90,
+                onDismiss = { showPopup = false }
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    PopupMenuItem(
+                        icon = painterResource(Res.drawable.ic_pen),
+                        iconColor = Gray50,
+                        text = ACTION_EDIT,
+                        textColor = Gray30,
+                        onClick = {}
+                    )
 
-        AppText(
-            text = category.name,
-            style = AppTextStyle.mdMedium,
-            color = if (isSelected) Gray00 else Gray40,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-            textAlign = TextAlign.Start,
-            overflow = TextOverflow.Ellipsis
-        )
+                    PopupMenuItem(
+                        icon = painterResource(Res.drawable.ic_trash),
+                        iconColor = Warning40,
+                        text = ACTION_DELETE,
+                        textColor = Warning40,
+                        onClick = {}
+                    )
+                }
+            }
+        }
     }
 }
