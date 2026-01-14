@@ -56,6 +56,7 @@ abstract class BaseViewModel<STATE: UiState>(
 
                 when(throwable) {
                     is DomainError.AuthExpired -> viewModelScope.launch { GlobalEventManager.navigateToLogin() }
+                    is DomainError.UnKnownUser -> viewModelScope.launch { GlobalEventManager.navigateToLogin() }
                 }
 
                 logger.e { "에러 발생: ${throwable.stackTraceToString()}" }

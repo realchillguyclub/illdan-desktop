@@ -65,6 +65,8 @@ import com.illdan.desktop.core.design_system.components.TodoItem
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
+import com.illdan.desktop.presentation.login.AuthEvent
+import com.illdan.desktop.presentation.login.AuthViewModel
 import illdandesktop.composeapp.generated.resources.Res
 import illdandesktop.composeapp.generated.resources.ic_top_banner
 import kotlinx.coroutines.delay
@@ -77,6 +79,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel(),
     navigateToLoginScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,6 +92,14 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        authViewModel.eventFlow.collect { event ->
+            when(event) {
+                is AuthEvent.NavigateToLogin -> navigateToLoginScreen()
+            }
+        }
+    }
+
     MainContent(
         uiState = uiState,
         onEnterClicked = viewModel::createTodo,
@@ -96,7 +107,7 @@ fun MainScreen(
         onTodayClicked = viewModel::getTodayList,
         onMove = { from, to -> viewModel.onMove(from, to) },
         onSwiped = viewModel::swipeTodo,
-        onShrinkChange = viewModel::toggleSideBarShrink,
+        onDeleted = viewModel::deleteTodo,
         onCheckedChange = viewModel::updateTodoStatus,
         onAllTodoClick = { if (!uiState.isMemoShrink) viewModel.toggleMemoShrink() },
         onMemoClick = viewModel::toggleMemoShrink,
@@ -105,7 +116,8 @@ fun MainScreen(
         onMemoAddClick = viewModel::createMemo,
         onDeleteMemo = viewModel::deleteMemo,
         onBookmarkClick = viewModel::updateTodoBookmark,
-        onCreateCategory = viewModel::createCategory
+        onCreateCategory = viewModel::createCategory,
+        onLogout = authViewModel::logout
     )
 }
 
@@ -117,7 +129,7 @@ private fun MainContent(
     onTodayClicked: () -> Unit,
     onMove: (Int, Int) -> Unit,
     onSwiped: (Long) -> Unit,
-    onShrinkChange: () -> Unit,
+    onDeleted: (Long) -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
@@ -126,7 +138,8 @@ private fun MainContent(
     onMemoAddClick: () -> Unit,
     onDeleteMemo: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit,
-    onCreateCategory: (String, Long) -> Unit
+    onCreateCategory: (String, Long) -> Unit,
+    onLogout: () -> Unit
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
 
@@ -140,10 +153,9 @@ private fun MainContent(
                 .fillMaxSize()
         ) {
             SideBar(
-                isShrink = uiState.isSideBarShrink,
-                onShrinkChange = onShrinkChange,
                 onAllTodoClick = onAllTodoClick,
-                onMemoClick = onMemoClick
+                onMemoClick = onMemoClick,
+                onLogout = onLogout
             )
 
             AnimatedVisibility(
@@ -205,6 +217,7 @@ private fun MainContent(
                         isToday = uiState.currentCategory.id == -2L,
                         onMove = onMove,
                         onSwiped =onSwiped,
+                        onDeleted = onDeleted,
                         onCheckedChange = onCheckedChange,
                         onBookmarkClick = onBookmarkClick
                     )
@@ -289,6 +302,7 @@ private fun TodoList(
     onMove: (Int, Int) -> Unit,
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onSwiped: (Long) -> Unit,
+    onDeleted: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit
 ) {
     val seenIds = remember { mutableStateListOf<Long>() }
@@ -300,6 +314,7 @@ private fun TodoList(
     var previousSize by remember { mutableIntStateOf(todoList.size) }
     val scope = rememberCoroutineScope()
     val swipeAnimDuration = 220
+    var selectedTodoId by remember { mutableStateOf(-1L) }  // 메뉴가 활성화된 투두 ID 저장
 
     data class ScrollSnapshot(val index: Int, val offset: Int)
     var pendingScrollRestore by remember { mutableStateOf<ScrollSnapshot?>(null) }
@@ -366,6 +381,7 @@ private fun TodoList(
                             isDeadlineDateMode = false,
                             modifier = Modifier.fillMaxWidth(),
                             isToday = isToday,
+                            isMenuExpanded = selectedTodoId == item.todoId,
                             onCheckedChange = { status, id ->
                                 val index = listState.firstVisibleItemIndex
                                 val offset = listState.firstVisibleItemScrollOffset
@@ -379,7 +395,9 @@ private fun TodoList(
                                     onSwiped(it)
                                 }
                             },
-                            onBookmarkClick = onBookmarkClick
+                            onBookmarkClick = onBookmarkClick,
+                            onTodoMenuClick = { selectedTodoId = it },
+                            onDeleted = { selectedTodoId = -1L; onDeleted(it) }
                         )
                     }
                 }

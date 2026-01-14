@@ -100,4 +100,8 @@ class TodoRepositoryImpl(
     override suspend fun createLocalTodo(todo: Todo): Flow<Result<Unit>> = flow {
         dataSource.upsert(todo)
     }
+
+    override suspend fun deleteTodo(todoId: Long): Result<Unit> {
+        return fetch(method = HttpMethod.DELETE, path = "/todo/$todoId")
+    }
 }

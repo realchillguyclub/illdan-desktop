@@ -171,6 +171,7 @@ class NetworkClient(
 
     fun mapApiErrorToDomain(code: String?, message: String?, isHttpUnauthorized: Boolean): DomainError =
         when {
+            code == CODE_UNKNOWN_USER -> DomainError.UnKnownUser
             code == CODE_ACCESS_EXPIRED -> DomainError.AuthExpired
             code == CODE_REFRESH_EXPIRED -> DomainError.AuthExpired
             isHttpUnauthorized -> DomainError.AuthExpired
@@ -189,5 +190,6 @@ class NetworkClient(
     companion object {
         const val CODE_ACCESS_EXPIRED = "AUTH-002"
         const val CODE_REFRESH_EXPIRED = "AUTH-008"
+        const val CODE_UNKNOWN_USER = "USER-001"
     }
 }

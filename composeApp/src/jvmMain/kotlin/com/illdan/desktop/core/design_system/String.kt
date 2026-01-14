@@ -2,9 +2,11 @@ package com.illdan.desktop.core.design_system
 
 const val WORD_NOTEPAD = "메모장"
 const val WORD_BOOKMARK = "중요"
+const val WORD_LOGOUT = "로그아웃"
 
 const val ACTION_CLOSE = "닫기"
 const val ACTION_CREATE = "생성하기"
+const val ACTION_DELETE = "삭제하기"
 
 const val PLACEHOLDER_TEXT_FILED = "할 일 추가하기..."
 const val PLACEHOLDER_MEMO_TITLE = "제목을 추가하세요."
@@ -24,3 +26,6 @@ const val EDIT_CATEGORY_DIALOG_TITLE = "카테고리 수정하기"
 // Memo
 const val EMPTY_MEMO_TITLE = "새로운 메모"
 const val EMPTY_MEMO_CONTENT = "메모 추가"
+
+// SideBar
+const val CHECK_VERSION = "업데이트 확인"

@@ -11,7 +11,7 @@ interface AuthRepository {
     suspend fun getAuthUrl(): Flow<Result<AuthUrl>>
     suspend fun getAuthInfo(query: String): Flow<Result<AuthInfo>>
 //    suspend fun reissueToken(request: ReissueRequestModel): Flow<Result<AuthTokens>>
-//    suspend fun logout(request: LogoutRequestModel): Flow<Result<Unit>>
+    suspend fun logout(): Result<Unit>
     suspend fun saveToken(request: AuthTokens)
     suspend fun clearToken()
     suspend fun getLocalToken(): Flow<AuthTokens>
