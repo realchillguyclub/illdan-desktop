@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.illdan.desktop.core.design_system.ACTION_CLOSE
 import com.illdan.desktop.core.design_system.ACTION_CREATE
+import com.illdan.desktop.core.design_system.ACTION_EDIT
 import com.illdan.desktop.core.design_system.ADD_CATEGORY_DIALOG_TITLE
 import com.illdan.desktop.core.design_system.EDIT_CATEGORY_DIALOG_TITLE
 import com.illdan.desktop.core.design_system.Gray00
@@ -118,10 +119,14 @@ fun CategoryDialog(
                         onEmojiSelected = { emoji = it }
                     )
                     Spacer(Modifier.height(36.dp))
-                    ActionButtons(onCloseClick = onDismiss, onCreateClick = {
-                        onCreateClick(categoryName, emoji.emojiId)
-                        onDismiss()
-                    })
+                    ActionButtons(
+                        isEdit = isEdit,
+                        onCloseClick = onDismiss,
+                        onCreateClick = {
+                            onCreateClick(categoryName, emoji.emojiId)
+                            onDismiss()
+                        }
+                    )
                 }
             }
         }
@@ -255,6 +260,7 @@ private fun EmojiGridItem(
 
 @Composable
 private fun ActionButtons(
+    isEdit: Boolean = false,
     onCloseClick: () -> Unit,
     onCreateClick: () -> Unit
 ) {
@@ -275,7 +281,7 @@ private fun ActionButtons(
         Spacer(Modifier.width(10.dp))
 
         AppButton(
-            text = ACTION_CREATE,
+            text = if (isEdit) ACTION_EDIT else ACTION_CREATE,
             onClick = onCreateClick,
             modifier = Modifier.weight(1f)
         )
