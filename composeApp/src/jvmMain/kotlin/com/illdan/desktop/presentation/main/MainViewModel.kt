@@ -3,6 +3,7 @@ package com.illdan.desktop.presentation.main
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
 import com.illdan.desktop.core.ui.base.BaseViewModel
+import com.illdan.desktop.domain.enums.AlertType
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.enums.TodoType
 import com.illdan.desktop.domain.model.category.Category
@@ -425,6 +426,10 @@ class MainViewModel(
     fun toggleMemoShrink() {
         if (uiState.value.memoList.isEmpty()) getMemoList()
         updateState(uiState.value.copy(isMemoShrink = !uiState.value.isMemoShrink))
+    }
+
+    fun updateAlertType(type: AlertType) {
+        updateStateSync(uiState.value.copy(alertType = type))
     }
 }
 

@@ -56,12 +56,14 @@ import com.illdan.desktop.core.design_system.Gray100
 import com.illdan.desktop.core.design_system.Gray90
 import com.illdan.desktop.core.design_system.PLACEHOLDER_TEXT_FILED
 import com.illdan.desktop.core.design_system.components.AddCategoryButton
+import com.illdan.desktop.core.design_system.components.AlertDialog
 import com.illdan.desktop.core.design_system.components.CategoryDialog
 import com.illdan.desktop.core.design_system.components.CategoryListItem
 import com.illdan.desktop.core.design_system.components.MemoBar
 import com.illdan.desktop.core.design_system.components.RoundedOutlineTextField
 import com.illdan.desktop.core.design_system.components.SideBar
 import com.illdan.desktop.core.design_system.components.TodoItem
+import com.illdan.desktop.domain.enums.AlertType
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
@@ -117,7 +119,8 @@ fun MainScreen(
         onDeleteMemo = viewModel::deleteMemo,
         onBookmarkClick = viewModel::updateTodoBookmark,
         onCreateCategory = viewModel::createCategory,
-        onLogout = authViewModel::logout
+        onLogout = authViewModel::logout,
+        onShowAlertDialog = viewModel::updateAlertType
     )
 }
 
@@ -139,9 +142,12 @@ private fun MainContent(
     onDeleteMemo: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit,
     onCreateCategory: (String, Long) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onShowAlertDialog: (AlertType) -> Unit
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
+    var isEdit by remember { mutableStateOf(false) }
+    var selectedCategory: Category? by remember { mutableStateOf(null) }
 
     Box(
         modifier = Modifier
@@ -197,7 +203,18 @@ private fun MainContent(
                     currentCategory = uiState.currentCategory,
                     onCategoryClicked = onCategoryClicked,
                     onTodayClicked = onTodayClicked,
-                    onAddClicked = { showCategoryDialog = true }
+                    onAddClicked = {
+                        selectedCategory = null
+                        showCategoryDialog = true
+                    },
+                    onShowEditDialog = {
+                        selectedCategory = uiState.currentCategory
+                        showCategoryDialog = true
+                        isEdit = true
+                    },
+                    onShowDeleteDialog = {
+                        onShowAlertDialog(AlertType.CategoryDelete)
+                    }
                 )
 
                 Column(
@@ -227,11 +244,18 @@ private fun MainContent(
 
         CategoryDialog(
             visible = showCategoryDialog,
-            selectedCategory = uiState.selectedCategory,
+            selectedCategory = selectedCategory,
             groupEmoji = uiState.emojiList,
-            isEdit = false,
-            onDismiss = { showCategoryDialog = false },
+            isEdit = isEdit,
+            onDismiss = { showCategoryDialog = false; isEdit = false },
             onCreateClick = onCreateCategory
+        )
+
+        AlertDialog(
+            visible = uiState.alertType != AlertType.None,
+            alertType = uiState.alertType,
+            onDismiss = { onShowAlertDialog(AlertType.None) },
+            onConfirm = { onShowAlertDialog(AlertType.None) }
         )
     }
 }
@@ -243,7 +267,9 @@ private fun CategoryList(
     currentCategory: Category,
     onCategoryClicked: (Int) -> Unit,
     onTodayClicked: () -> Unit,
-    onAddClicked: () -> Unit
+    onAddClicked: () -> Unit,
+    onShowEditDialog: () -> Unit,
+    onShowDeleteDialog: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxWidth()
@@ -269,7 +295,9 @@ private fun CategoryList(
                     CategoryListItem(
                         category = item,
                         isSelected = currentCategory.id == item.id,
-                        onClick = { onCategoryClicked(index) }
+                        onClick = { onCategoryClicked(index) },
+                        onShowEditDialog = onShowEditDialog,
+                        onShowDeleteDialog = onShowDeleteDialog
                     )
                 }
             }
