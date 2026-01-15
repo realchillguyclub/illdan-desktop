@@ -56,7 +56,9 @@ import org.jetbrains.compose.resources.painterResource
 fun CategoryListItem(
     category: Category,
     isSelected: Boolean = false,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onShowEditDialog: () -> Unit = {},
+    onShowDeleteDialog: () -> Unit = {}
 ) {
     val context = LocalPlatformContext.current
     val interactionSource = remember { MutableInteractionSource() }
@@ -143,7 +145,7 @@ fun CategoryListItem(
                         iconColor = Gray50,
                         text = ACTION_EDIT,
                         textColor = Gray30,
-                        onClick = {}
+                        onClick = { onShowEditDialog(); showPopup = false }
                     )
 
                     PopupMenuItem(
@@ -151,7 +153,7 @@ fun CategoryListItem(
                         iconColor = Warning40,
                         text = ACTION_DELETE,
                         textColor = Warning40,
-                        onClick = {}
+                        onClick = { onShowDeleteDialog(); showPopup = false }
                     )
                 }
             }
