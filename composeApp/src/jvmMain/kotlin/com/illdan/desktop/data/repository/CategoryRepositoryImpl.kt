@@ -47,4 +47,10 @@ class CategoryRepositoryImpl(
             path = "/category/$id",
             body = CreateCategoryRequest(name, emojiId),
         )
+
+    override suspend fun deleteCategory(id: Long): Result<Unit> =
+        fetch(
+            method = HttpMethod.DELETE,
+            path = "/category/$id",
+        )
 }

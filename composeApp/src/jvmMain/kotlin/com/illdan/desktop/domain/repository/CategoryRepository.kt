@@ -16,4 +16,6 @@ interface CategoryRepository {
         name: String,
         emojiId: Long,
     ): Result<Unit>
+
+    suspend fun deleteCategory(id: Long): Result<Unit>
 }
