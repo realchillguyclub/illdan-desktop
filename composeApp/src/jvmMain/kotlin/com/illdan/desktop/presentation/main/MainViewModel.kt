@@ -108,6 +108,24 @@ class MainViewModel(
         )
     }
 
+    // 메뉴 전용 카테고리 업데이트
+    fun updateSelectedCategory(id: Long) {
+        val category = currentState.categoryList.find { it.id == id }
+
+        updateState(uiState.value.copy(selectedCategory = category))
+    }
+
+    // 카테고리 수정
+    fun updateCategory(
+        name: String,
+        emojiId: Long,
+    ) {
+        launchResult(
+            block = { categoryRepository.updateCategory(currentState.currentCategory.id, name, emojiId) },
+            onSuccess = { getCategoryList() },
+        )
+    }
+
     // ---------------------------------------------오늘----------------------------------------------
 
     // 오늘 할 일 조회
