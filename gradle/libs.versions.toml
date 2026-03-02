@@ -64,6 +64,9 @@ dataStore = "1.1.1"
 # DateTime
 datetime = "0.7.1"
 
+# ktlint
+ktlint = "14.0.1"
+
 [libraries]
 kotlin-test                     = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit                = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -157,3 +160,4 @@ buildKonfig                     = { id = "com.codingfeline.buildkonfig", version
 google-services                 = { id = "com.google.gms.google-services", version.ref = "google-services" }
 sqldelight                      = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 serialization                   = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktlint                          = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

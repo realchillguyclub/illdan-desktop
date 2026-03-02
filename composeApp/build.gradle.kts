@@ -1,6 +1,8 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import com.codingfeline.buildkonfig.gradle.BuildKonfigExtension
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask
+import org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask
 import java.util.Properties
 
 plugins {
@@ -11,29 +13,31 @@ plugins {
     alias(libs.plugins.buildKonfig)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.ktlint)
 }
 
 extensions.configure<BuildKonfigExtension> {
     packageName = "com.illdan.desktop"
 
-    val props = Properties().apply {
-        val file = rootProject.file("local.properties")
-        if (file.exists()) file.inputStream().use { load(it) }
-    }
+    val props =
+        Properties().apply {
+            val file = rootProject.file("local.properties")
+            if (file.exists()) file.inputStream().use { load(it) }
+        }
     val baseUrl = props.getProperty("BASE_URL")
 
     defaultConfigs {
         buildConfigField(
             Type.STRING,
             "BASE_URL",
-            baseUrl
+            baseUrl,
         )
     }
 }
 
 kotlin {
     jvm()
-    
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -103,7 +107,7 @@ compose.desktop {
                 "java.sql",
                 "jdk.crypto.ec",
                 "jdk.unsupported",
-                "jdk.unsupported.desktop"
+                "jdk.unsupported.desktop",
             )
 
             macOS {

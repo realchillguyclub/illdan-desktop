@@ -9,7 +9,7 @@ import com.illdan.desktop.core.navigation.NavRoutes
 import com.illdan.desktop.presentation.login.LoginScreen
 import org.koin.compose.viewmodel.koinViewModel
 
-object AuthNavGraph: NavGraphContributor {
+object AuthNavGraph : NavGraphContributor {
     override val graphRoute: NavRoutes
         get() = NavRoutes.LoginGraph
     override val startDestination: String
@@ -20,7 +20,7 @@ object AuthNavGraph: NavGraphContributor {
     override fun NavGraphBuilder.registerGraph(navController: NavHostController) {
         navigation(
             route = graphRoute.route,
-            startDestination = startDestination
+            startDestination = startDestination,
         ) {
             composable(NavRoutes.LoginScreen.route) {
                 LoginScreen(
@@ -31,7 +31,7 @@ object AuthNavGraph: NavGraphContributor {
                                 inclusive = true
                             }
                         }
-                    }
+                    },
                 )
             }
         }

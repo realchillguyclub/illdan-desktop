@@ -6,7 +6,7 @@ import com.illdan.desktop.core.network.retryResult
 import com.illdan.desktop.domain.enums.HttpMethod
 
 abstract class BaseRepository(
-    protected val network: NetworkClient
+    protected val network: NetworkClient,
 ) {
     val logger = Logger.withTag("BaseRepository")
 
@@ -17,7 +17,7 @@ abstract class BaseRepository(
         query: Map<String, String> = emptyMap(),
         addAuthHeader: Boolean = true,
         retries: Int = 0,
-        isReissue: Boolean = false
+        isReissue: Boolean = false,
     ): Result<T> {
         val client = network
 
@@ -29,7 +29,7 @@ abstract class BaseRepository(
                     body = body,
                     queryParams = query,
                     addAuthHeader = addAuthHeader,
-                    isReissue = isReissue
+                    isReissue = isReissue,
                 )
             } catch (t: Throwable) {
                 Result.failure(t)
@@ -45,19 +45,20 @@ abstract class BaseRepository(
         addAuthHeader: Boolean = true,
         retries: Int = 0,
         isReissue: Boolean = false,
-        mapper: Mapper<R, M>
+        mapper: Mapper<R, M>,
     ): Result<M> {
         logger.d("fetchMapped")
 
-        val raw: Result<R> = fetch(
-            method = method,
-            path = path,
-            body = body,
-            query = query,
-            addAuthHeader = addAuthHeader,
-            retries = retries,
-            isReissue = isReissue
-        )
+        val raw: Result<R> =
+            fetch(
+                method = method,
+                path = path,
+                body = body,
+                query = query,
+                addAuthHeader = addAuthHeader,
+                retries = retries,
+                isReissue = isReissue,
+            )
 
         return raw.mapCatching { mapper.responseToModel(it) }
     }

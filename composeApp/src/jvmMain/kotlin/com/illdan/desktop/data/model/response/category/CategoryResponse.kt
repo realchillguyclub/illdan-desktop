@@ -7,5 +7,5 @@ data class CategoryResponse(
     val id: Long,
     val name: String,
     val emojiId: Long,
-    val imageUrl: String
+    val imageUrl: String,
 )

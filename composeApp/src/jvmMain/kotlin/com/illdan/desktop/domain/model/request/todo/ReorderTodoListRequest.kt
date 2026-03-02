@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReorderTodoListRequest(
     val type: String,
-    val todoIds: List<Long>
+    val todoIds: List<Long>,
 )

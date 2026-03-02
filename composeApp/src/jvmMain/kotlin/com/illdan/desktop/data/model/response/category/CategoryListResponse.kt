@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CategoryListResponse(
-    val categories: List<CategoryResponse>
+    val categories: List<CategoryResponse>,
 )

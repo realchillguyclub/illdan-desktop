@@ -16,5 +16,5 @@ data class Todo(
     val deadline: String = "",
     val routineDays: List<String> = emptyList(),
     val categoryName: String = "",
-    val imageUrl: String = ""
+    val imageUrl: String = "",
 )

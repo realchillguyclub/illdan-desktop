@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,8 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,17 +45,17 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import coil3.compose.AsyncImage
-import com.illdan.desktop.core.design_system.ACTION_DELETE
-import com.illdan.desktop.core.design_system.AppTypo
-import com.illdan.desktop.core.design_system.Gray00
-import com.illdan.desktop.core.design_system.Gray50
-import com.illdan.desktop.core.design_system.Gray70
-import com.illdan.desktop.core.design_system.Gray80
-import com.illdan.desktop.core.design_system.Gray90
-import com.illdan.desktop.core.design_system.Gray95
-import com.illdan.desktop.core.design_system.Primary40
-import com.illdan.desktop.core.design_system.WORD_BOOKMARK
-import com.illdan.desktop.core.design_system.Warning40
+import com.illdan.desktop.core.designsystem.ACTION_DELETE
+import com.illdan.desktop.core.designsystem.AppTypo
+import com.illdan.desktop.core.designsystem.Gray00
+import com.illdan.desktop.core.designsystem.Gray50
+import com.illdan.desktop.core.designsystem.Gray70
+import com.illdan.desktop.core.designsystem.Gray80
+import com.illdan.desktop.core.designsystem.Gray90
+import com.illdan.desktop.core.designsystem.Gray95
+import com.illdan.desktop.core.designsystem.Primary40
+import com.illdan.desktop.core.designsystem.WORD_BOOKMARK
+import com.illdan.desktop.core.designsystem.Warning40
 import com.illdan.desktop.core.util.DateTimeFormatter
 import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.enums.TodoStatus
@@ -87,7 +84,7 @@ fun TodoItem(
     onBookmarkClick: (Long) -> Unit = {},
     onTodoMenuClick: (Long) -> Unit = {},
     onSwiped: (Long) -> Unit,
-    onDeleted: (Long) -> Unit = {}
+    onDeleted: (Long) -> Unit = {},
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -95,45 +92,48 @@ fun TodoItem(
         mutableStateOf(
             TextFieldValue(
                 text = item.content,
-                selection = TextRange(item.content.length)
-            )
+                selection = TextRange(item.content.length),
+            ),
         )
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth(),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Gray95)
-                .padding(vertical = 16.dp)
-                .padding(start = 16.dp, end = 12.dp)
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Gray95)
+                    .padding(vertical = 16.dp)
+                    .padding(start = 16.dp, end = 12.dp),
         ) {
             if (isToday) {
                 CommonCheckBox(
                     isChecked = item.todoStatus == TodoStatus.COMPLETED,
                     onCheckedChange = {
                         onCheckedChange(item.todoStatus, item.todoId)
-                    }
+                    },
                 )
             } else {
                 Image(
                     painter = painterResource(Res.drawable.ic_arrow_left),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onSwiped(item.todoId) }
+                    modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onSwiped(item.todoId) },
                 )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(
-                modifier = Modifier
-                    .weight(1f),
-                horizontalAlignment = Alignment.Start
+                modifier =
+                    Modifier
+                        .weight(1f),
+                horizontalAlignment = Alignment.Start,
             ) {
                 BasicTextField(
                     value = textFieldValue,
@@ -141,39 +141,41 @@ fun TodoItem(
                         textFieldValue = newTextFieldValue
                     },
                     textStyle = AppTypo().mdRegular.copy(color = Gray00),
-                    modifier = Modifier
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-                            if (focusState.isFocused) {
-                                textFieldValue = textFieldValue.copy(
-                                    selection = TextRange(textFieldValue.text.length)
-                                )
-                            }
-                        }
-                        .onPreviewKeyEvent { e ->
-                            val isEnter = e.key == Key.Enter || e.key == Key.NumPadEnter
-                            if (isEnter && e.type == KeyEventType.KeyDown) {
-                                focusManager.clearFocus(force = true)
-                                onClearActiveItem()
-                                if (item.content != textFieldValue.text) {
-                                    onTodoItemModified(item.todoId, textFieldValue.text)
+                    modifier =
+                        Modifier
+                            .focusRequester(focusRequester)
+                            .onFocusChanged { focusState ->
+                                if (focusState.isFocused) {
+                                    textFieldValue =
+                                        textFieldValue.copy(
+                                            selection = TextRange(textFieldValue.text.length),
+                                        )
                                 }
-                                true
-                            } else if (isEnter && e.type == KeyEventType.KeyUp) {
-                                true
-                            } else {
-                                false
-                            }
-                        },
+                            }.onPreviewKeyEvent { e ->
+                                val isEnter = e.key == Key.Enter || e.key == Key.NumPadEnter
+                                if (isEnter && e.type == KeyEventType.KeyDown) {
+                                    focusManager.clearFocus(force = true)
+                                    onClearActiveItem()
+                                    if (item.content != textFieldValue.text) {
+                                        onTodoItemModified(item.todoId, textFieldValue.text)
+                                    }
+                                    true
+                                } else if (isEnter && e.type == KeyEventType.KeyUp) {
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
-                            onClearActiveItem()
-                            if (item.content != textFieldValue.text) onTodoItemModified(item.todoId, textFieldValue.text)
-                        }
-                    ),
-                    cursorBrush = SolidColor(Gray00)
+                    keyboardActions =
+                        KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                onClearActiveItem()
+                                if (item.content != textFieldValue.text) onTodoItemModified(item.todoId, textFieldValue.text)
+                            },
+                        ),
+                    cursorBrush = SolidColor(Gray00),
                 )
 
                 if (item.isBookmark || item.imageUrl.isNotBlank() || item.deadline.isNotBlank() || item.routineDays.isNotEmpty()) {
@@ -186,7 +188,7 @@ fun TodoItem(
                 Image(
                     painter = painterResource(Res.drawable.ic_arrow_right),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onSwiped(item.todoId) }
+                    modifier = Modifier.size(24.dp).clip(CircleShape).clickable { onSwiped(item.todoId) },
                 )
             }
 
@@ -196,10 +198,11 @@ fun TodoItem(
                 painter = painterResource(Res.drawable.ic_three_dot),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(Gray80),
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .clickable { onTodoMenuClick(item.todoId) }
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .clickable { onTodoMenuClick(item.todoId) },
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -208,10 +211,11 @@ fun TodoItem(
                 painter = painterResource(Res.drawable.ic_star),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(if (item.isBookmark) Primary40 else Gray70),
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .clickable { onBookmarkClick(item.todoId) }
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .clickable { onBookmarkClick(item.todoId) },
             )
         }
 
@@ -220,14 +224,14 @@ fun TodoItem(
                 alignment = Alignment.CenterEnd,
                 offset = IntOffset(x = -40, y = 30),
                 containerColor = Gray90,
-                onDismiss = { onTodoMenuClick(-1L) }
+                onDismiss = { onTodoMenuClick(-1L) },
             ) {
                 PopupMenuItem(
                     icon = painterResource(Res.drawable.ic_trash),
                     iconColor = Warning40,
                     text = ACTION_DELETE,
                     textColor = Warning40,
-                    onClick = { onDeleted(item.todoId) }
+                    onClick = { onDeleted(item.todoId) },
                 )
             }
         }
@@ -235,34 +239,42 @@ fun TodoItem(
 }
 
 @Composable
-private fun TodoMetaInfoSection(
-    item: Todo
-) {
+private fun TodoMetaInfoSection(item: Todo) {
     val deadline = DateTimeFormatter.formatDeadline(item.deadline)
     val routineDays = item.routineDays.joinToString("")
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (deadline.isNotBlank()) { TodoMetaInfoItem(icon = painterResource(Res.drawable.ic_calendar), text = deadline) }
-        if (routineDays.isNotBlank()) { TodoMetaInfoItem(icon = painterResource(Res.drawable.ic_repeat), text = routineDays) }
-        if (item.isBookmark) { BookmarkCategoryInfoItem(imageUrl = item.imageUrl, categoryName = item.categoryName, isBookmark = true) }
-        if (item.imageUrl.isNotBlank()) { BookmarkCategoryInfoItem(imageUrl = item.imageUrl, categoryName = item.categoryName, isBookmark = false) }
+        if (deadline.isNotBlank()) {
+            TodoMetaInfoItem(icon = painterResource(Res.drawable.ic_calendar), text = deadline)
+        }
+        if (routineDays.isNotBlank()) {
+            TodoMetaInfoItem(icon = painterResource(Res.drawable.ic_repeat), text = routineDays)
+        }
+        if (item.isBookmark) {
+            BookmarkCategoryInfoItem(imageUrl = item.imageUrl, categoryName = item.categoryName, isBookmark = true)
+        }
+        if (item.imageUrl.isNotBlank()) {
+            BookmarkCategoryInfoItem(imageUrl = item.imageUrl, categoryName = item.categoryName, isBookmark = false)
+        }
     }
 }
 
 @Composable
 private fun TodoMetaInfoItem(
     icon: Painter,
-    text: String
+    text: String,
 ) {
     Row(
-        modifier = Modifier
-            .background(Gray90, RoundedCornerShape(6.dp))
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .background(Gray90, RoundedCornerShape(6.dp))
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(painter = icon, contentDescription = null, modifier = Modifier.size(12.dp))
         Spacer(Modifier.width(3.dp))
@@ -274,27 +286,28 @@ private fun TodoMetaInfoItem(
 private fun BookmarkCategoryInfoItem(
     imageUrl: String,
     categoryName: String,
-    isBookmark: Boolean
+    isBookmark: Boolean,
 ) {
     Row(
-        modifier = Modifier
-            .background(Gray90, RoundedCornerShape(6.dp))
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .background(Gray90, RoundedCornerShape(6.dp))
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (isBookmark) {
             Image(
                 painter = painterResource(Res.drawable.ic_star),
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
-                colorFilter = ColorFilter.tint(Primary40)
+                colorFilter = ColorFilter.tint(Primary40),
             )
         } else {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
-                onError = { Logger.e("IMAGE ERROR → ${it.result.throwable}") }
+                onError = { Logger.e("IMAGE ERROR → ${it.result.throwable}") },
             )
         }
         Spacer(Modifier.width(3.dp))

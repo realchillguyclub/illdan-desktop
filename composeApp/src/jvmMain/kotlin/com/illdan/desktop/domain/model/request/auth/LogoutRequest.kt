@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LogoutRequest(
     val mobileType: String = "DESKTOP",
-    val clientId: String  = ""
+    val clientId: String = "",
 )

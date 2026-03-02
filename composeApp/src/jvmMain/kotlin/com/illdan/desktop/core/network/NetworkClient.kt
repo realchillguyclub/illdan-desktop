@@ -18,19 +18,19 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class NetworkClient(
-    val dataStore: AppDataStore = AppDataStore
+    val dataStore: AppDataStore = AppDataStore,
 ) {
     val logger = Logger.withTag("NetworkClient")
     val httpClient = httpClient()
-    val baseUrl: String = BuildKonfig.BASE_URL
-        .trim()
-        .trim('"')
-        .removeSuffix("/")
+    val baseUrl: String =
+        BuildKonfig.BASE_URL
+            .trim()
+            .trim('"')
+            .removeSuffix("/")
     val refreshMutex = Mutex()
     val reissuePath = "/auth/refresh"
 
-    fun joinUrl(path: String): String =
-        "$baseUrl/${path.trimStart('/')}"
+    fun joinUrl(path: String): String = "$baseUrl/${path.trimStart('/')}"
 
     suspend inline fun <reified T> request(
         method: HttpMethod,
@@ -39,17 +39,18 @@ class NetworkClient(
         body: Any? = null,
         addAuthHeader: Boolean = true,
         isReissue: Boolean = false,
-        retryOnAuth: Boolean = true
-    ): Result<T> = requestImpl(
-        method = method,
-        path = path,
-        queryParams = queryParams,
-        body = body,
-        addAuthHeader = addAuthHeader,
-        isReissue = isReissue,
-        retryOnAuth = retryOnAuth,
-        deserialize = { response -> response.body<ApiResponse<T>>() }   // ★ T 디코딩은 여기서만 reified 사용
-    )
+        retryOnAuth: Boolean = true,
+    ): Result<T> =
+        requestImpl(
+            method = method,
+            path = path,
+            queryParams = queryParams,
+            body = body,
+            addAuthHeader = addAuthHeader,
+            isReissue = isReissue,
+            retryOnAuth = retryOnAuth,
+            deserialize = { response -> response.body<ApiResponse<T>>() }, // ★ T 디코딩은 여기서만 reified 사용
+        )
 
     suspend fun <T> requestImpl(
         method: HttpMethod,
@@ -59,33 +60,35 @@ class NetworkClient(
         addAuthHeader: Boolean,
         isReissue: Boolean,
         retryOnAuth: Boolean,
-        deserialize: suspend (io.ktor.client.statement.HttpResponse) -> ApiResponse<T>
+        deserialize: suspend (io.ktor.client.statement.HttpResponse) -> ApiResponse<T>,
     ): Result<T> {
         return try {
             val tokens = if (addAuthHeader) dataStore.getTokensOnce() else null
 
-            val response = httpClient.request(joinUrl(path)) {
-                logger.d { joinUrl(path) }
-                this.method = when (method) {
-                    HttpMethod.GET -> io.ktor.http.HttpMethod.Get
-                    HttpMethod.POST -> io.ktor.http.HttpMethod.Post
-                    HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
-                    HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
-                    HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
-                }
+            val response =
+                httpClient.request(joinUrl(path)) {
+                    logger.d { joinUrl(path) }
+                    this.method =
+                        when (method) {
+                            HttpMethod.GET -> io.ktor.http.HttpMethod.Get
+                            HttpMethod.POST -> io.ktor.http.HttpMethod.Post
+                            HttpMethod.PUT -> io.ktor.http.HttpMethod.Put
+                            HttpMethod.PATCH -> io.ktor.http.HttpMethod.Patch
+                            HttpMethod.DELETE -> io.ktor.http.HttpMethod.Delete
+                        }
 
-                queryParams.forEach { (key, value) ->
-                    url.parameters.append(key, value.toString())
-                }
+                    queryParams.forEach { (key, value) ->
+                        url.parameters.append(key, value.toString())
+                    }
 
-                if (body != null) setBody(body)
+                    if (body != null) setBody(body)
 
-                if (addAuthHeader && tokens != null) {
-                    val value = if (isReissue) tokens.refreshToken else tokens.accessToken
-                    header("Authorization", "Bearer $value")
-                    header("X-Mobile-Type", "DESKTOP")
+                    if (addAuthHeader && tokens != null) {
+                        val value = if (isReissue) tokens.refreshToken else tokens.accessToken
+                        header("Authorization", "Bearer $value")
+                        header("X-Mobile-Type", "DESKTOP")
+                    }
                 }
-            }
 
             val isHttpUnauthorized = response.status == HttpStatusCode.Unauthorized
 
@@ -119,7 +122,7 @@ class NetworkClient(
                         addAuthHeader = addAuthHeader,
                         isReissue = false,
                         retryOnAuth = false,
-                        deserialize = deserialize
+                        deserialize = deserialize,
                     )
                 } else {
                     return Result.failure(DomainError.AuthExpired)
@@ -128,7 +131,6 @@ class NetworkClient(
 
             val domainError = mapApiErrorToDomain(code, message, isHttpUnauthorized)
             Result.failure(domainError)
-
         } catch (e: Exception) {
             Result.failure(mapThrowableToDomain(e))
         }
@@ -148,19 +150,21 @@ class NetworkClient(
             }
             if (current == null) return Result.failure(DomainError.AuthExpired)
 
-            val reissueResult: Result<AuthTokens> = requestImpl(
-                method = HttpMethod.POST,
-                path = reissuePath,
-                queryParams = emptyMap(),
-                body = ReissueRequest(
-                    accessToken = current.accessToken,
-                    refreshToken = current.refreshToken
-                ),
-                addAuthHeader = true,
-                isReissue = true,
-                retryOnAuth = false,
-                deserialize = { it.body<ApiResponse<AuthTokens>>() }
-            )
+            val reissueResult: Result<AuthTokens> =
+                requestImpl(
+                    method = HttpMethod.POST,
+                    path = reissuePath,
+                    queryParams = emptyMap(),
+                    body =
+                        ReissueRequest(
+                            accessToken = current.accessToken,
+                            refreshToken = current.refreshToken,
+                        ),
+                    addAuthHeader = true,
+                    isReissue = true,
+                    retryOnAuth = false,
+                    deserialize = { it.body<ApiResponse<AuthTokens>>() },
+                )
 
             reissueResult.onSuccess { newTokens ->
                 dataStore.saveTokens(newTokens)
@@ -169,15 +173,33 @@ class NetworkClient(
         }
     }
 
-    fun mapApiErrorToDomain(code: String?, message: String?, isHttpUnauthorized: Boolean): DomainError =
+    fun mapApiErrorToDomain(
+        code: String?,
+        message: String?,
+        isHttpUnauthorized: Boolean,
+    ): DomainError =
         when {
-            code == CODE_UNKNOWN_USER -> DomainError.UnKnownUser
-            code == CODE_ACCESS_EXPIRED -> DomainError.AuthExpired
-            code == CODE_REFRESH_EXPIRED -> DomainError.AuthExpired
-            isHttpUnauthorized -> DomainError.AuthExpired
-            else -> DomainError.Unknown(
-                e = ApiException(code ?: "UNKNOWN", message ?: "알 수 없는 에러")
-            )
+            code == CODE_UNKNOWN_USER -> {
+                DomainError.UnKnownUser
+            }
+
+            code == CODE_ACCESS_EXPIRED -> {
+                DomainError.AuthExpired
+            }
+
+            code == CODE_REFRESH_EXPIRED -> {
+                DomainError.AuthExpired
+            }
+
+            isHttpUnauthorized -> {
+                DomainError.AuthExpired
+            }
+
+            else -> {
+                DomainError.Unknown(
+                    e = ApiException(code ?: "UNKNOWN", message ?: "알 수 없는 에러"),
+                )
+            }
         }
 
     fun mapThrowableToDomain(t: Throwable): DomainError =

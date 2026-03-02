@@ -3,7 +3,6 @@ package com.illdan.desktop.core.ui.base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.touchlab.kermit.Logger
-import com.illdan.desktop.core.network.base.ApiException
 import com.illdan.desktop.core.util.GlobalEventManager
 import com.illdan.desktop.domain.error.DomainError
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,15 +13,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
-abstract class BaseViewModel<STATE: UiState>(
-    initialState: STATE
-): ViewModel() {
+abstract class BaseViewModel<STATE : UiState>(
+    initialState: STATE,
+) : ViewModel() {
     private val logger = Logger.withTag(tag = "BaseViewModel")
 
     private val _uiState = MutableStateFlow(initialState)
     val uiState = _uiState.asStateFlow()
+    protected val currentState: STATE get() = _uiState.value
 
-    private val _eventFlow = MutableSharedFlow<Event>()
+    private val _eventFlow =
+        MutableSharedFlow<Event>(
+            replay = 0,
+            extraBufferCapacity = 64,
+        )
     val eventFlow = _eventFlow.asSharedFlow()
 
     protected fun updateState(state: STATE) {
@@ -35,33 +39,44 @@ abstract class BaseViewModel<STATE: UiState>(
         _uiState.update { state }
     }
 
-    protected fun emitEventFlow(event: Event) {
+    protected suspend fun emitEventFlow(event: Event) {
+        _eventFlow.emit(event)
+    }
+
+    protected fun tryEmitEventFlow(event: Event) {
+        _eventFlow.tryEmit(event)
+    }
+
+    protected fun <D> launchResult(
+        block: suspend () -> Result<D>,
+        onSuccess: (D) -> Unit,
+        onError: (Throwable) -> Unit = {},
+    ) {
         viewModelScope.launch {
-            _eventFlow.emit(event)
+            val result =
+                try {
+                    block()
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
+
+            result.fold(
+                onSuccess = onSuccess,
+                onFailure = { t ->
+                    if (t is CancellationException) throw t
+                    logger.e(t) { "에러가 발생했습니다: ${t.message}" }
+                    handleGlobalError(t)
+                    onError(t)
+                },
+            )
         }
     }
 
-    protected fun<D> resultResponse(
-        response: Result<D>,
-        successCallback: (D) -> Unit,
-        errorCallback: ((Throwable) -> Unit)? = null
-    ) {
-        response.fold(
-            onSuccess = { data ->
-                successCallback.invoke(data)
-            },
-            onFailure = { throwable ->
-                // CancellationException은 코루틴 취소 신호이므로 그대로 전파해 상위 코루틴이 취소되도록 한다
-                if (throwable is CancellationException) throw throwable
-
-                when(throwable) {
-                    is DomainError.AuthExpired -> viewModelScope.launch { GlobalEventManager.navigateToLogin() }
-                    is DomainError.UnKnownUser -> viewModelScope.launch { GlobalEventManager.navigateToLogin() }
-                }
-
-                logger.e { "에러 발생: ${throwable.stackTraceToString()}" }
-                errorCallback?.invoke(throwable)
-            }
-        )
+    protected suspend fun handleGlobalError(t: Throwable) {
+        when (t) {
+            is DomainError.AuthExpired,
+            is DomainError.UnKnownUser,
+            -> GlobalEventManager.navigateToLogin()
+        }
     }
 }

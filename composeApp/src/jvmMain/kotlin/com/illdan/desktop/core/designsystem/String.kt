@@ -1,12 +1,15 @@
-package com.illdan.desktop.core.design_system
+package com.illdan.desktop.core.designsystem
 
 const val WORD_NOTEPAD = "메모장"
 const val WORD_BOOKMARK = "중요"
 const val WORD_LOGOUT = "로그아웃"
+const val WORD_CANCEL = "취소"
+const val WORD_DELETE = "삭제"
 
 const val ACTION_CLOSE = "닫기"
 const val ACTION_CREATE = "생성하기"
 const val ACTION_DELETE = "삭제하기"
+const val ACTION_EDIT = "수정하기"
 
 const val PLACEHOLDER_TEXT_FILED = "할 일 추가하기..."
 const val PLACEHOLDER_MEMO_TITLE = "제목을 추가하세요."
@@ -22,6 +25,10 @@ const val NEW_CATEGORY = "새 카테고리"
 // CategoryDialog
 const val ADD_CATEGORY_DIALOG_TITLE = "카테고리 추가하기"
 const val EDIT_CATEGORY_DIALOG_TITLE = "카테고리 수정하기"
+
+// Dialog
+const val DIALOG_DELETE_CATEGORY_TITLE = "카테고리를 삭제하시겠어요?"
+const val DIALOG_DELETE_CATEGORY_CONTENT = "카테고리에 저장된 할 일도 함께 삭제돼요"
 
 // Memo
 const val EMPTY_MEMO_TITLE = "새로운 메모"

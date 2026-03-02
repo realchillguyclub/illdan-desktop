@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -52,16 +53,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.illdan.desktop.core.design_system.Gray100
-import com.illdan.desktop.core.design_system.Gray90
-import com.illdan.desktop.core.design_system.PLACEHOLDER_TEXT_FILED
-import com.illdan.desktop.core.design_system.components.AddCategoryButton
-import com.illdan.desktop.core.design_system.components.CategoryDialog
-import com.illdan.desktop.core.design_system.components.CategoryListItem
-import com.illdan.desktop.core.design_system.components.MemoBar
-import com.illdan.desktop.core.design_system.components.RoundedOutlineTextField
-import com.illdan.desktop.core.design_system.components.SideBar
-import com.illdan.desktop.core.design_system.components.TodoItem
+import com.illdan.desktop.core.designsystem.DIALOG_DELETE_CATEGORY_CONTENT
+import com.illdan.desktop.core.designsystem.DIALOG_DELETE_CATEGORY_TITLE
+import com.illdan.desktop.core.designsystem.Gray100
+import com.illdan.desktop.core.designsystem.Gray90
+import com.illdan.desktop.core.designsystem.PLACEHOLDER_TEXT_FILED
+import com.illdan.desktop.core.designsystem.WORD_CANCEL
+import com.illdan.desktop.core.designsystem.WORD_DELETE
+import com.illdan.desktop.core.designsystem.components.AddCategoryButton
+import com.illdan.desktop.core.designsystem.components.CategoryDialog
+import com.illdan.desktop.core.designsystem.components.CategoryListItem
+import com.illdan.desktop.core.designsystem.components.MemoBar
+import com.illdan.desktop.core.designsystem.components.RoundedOutlineTextField
+import com.illdan.desktop.core.designsystem.components.SideBar
+import com.illdan.desktop.core.designsystem.components.TodoItem
+import com.illdan.desktop.core.designsystem.components.dialog.AlertDialog
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
@@ -80,13 +86,13 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 fun MainScreen(
     viewModel: MainViewModel = koinViewModel(),
     authViewModel: AuthViewModel = koinViewModel(),
-    navigateToLoginScreen: () -> Unit
+    navigateToLoginScreen: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collect { event ->
-            when(event) {
+            when (event) {
                 is MainEvent.NavigateToLogin -> navigateToLoginScreen()
             }
         }
@@ -94,7 +100,7 @@ fun MainScreen(
 
     LaunchedEffect(Unit) {
         authViewModel.eventFlow.collect { event ->
-            when(event) {
+            when (event) {
                 is AuthEvent.NavigateToLogin -> navigateToLoginScreen()
             }
         }
@@ -117,7 +123,10 @@ fun MainScreen(
         onDeleteMemo = viewModel::deleteMemo,
         onBookmarkClick = viewModel::updateTodoBookmark,
         onCreateCategory = viewModel::createCategory,
-        onLogout = authViewModel::logout
+        onEditCategory = viewModel::updateCategory,
+        onCategoryMenuClick = viewModel::updateSelectedCategory,
+        onDeleteCategory = viewModel::deleteCategory,
+        onLogout = authViewModel::logout,
     )
 }
 
@@ -139,30 +148,36 @@ private fun MainContent(
     onDeleteMemo: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit,
     onCreateCategory: (String, Long) -> Unit,
-    onLogout: () -> Unit
+    onEditCategory: (String, Long) -> Unit,
+    onCategoryMenuClick: (Long?) -> Unit,
+    onDeleteCategory: () -> Unit,
+    onLogout: () -> Unit,
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
+    var showDeleteCategoryDialog by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier =
+                Modifier
+                    .fillMaxSize(),
         ) {
             SideBar(
                 onAllTodoClick = onAllTodoClick,
                 onMemoClick = onMemoClick,
-                onLogout = onLogout
+                onLogout = onLogout,
             )
 
             AnimatedVisibility(
                 visible = !uiState.isMemoShrink,
                 modifier = Modifier.background(Gray100),
                 enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally()
+                exit = fadeOut() + shrinkHorizontally(),
             ) {
                 MemoBar(
                     memoList = uiState.memoList,
@@ -170,23 +185,25 @@ private fun MainContent(
                     onMemoSubmit = onMemoSubmit,
                     onMemoSelected = onMemoSelected,
                     onAddClick = onMemoAddClick,
-                    onDeleteClick = onDeleteMemo
+                    onDeleteClick = onDeleteMemo,
                 )
             }
 
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(Gray100),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Gray100),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Image(
                     painter = painterResource(Res.drawable.ic_top_banner),
                     contentDescription = null,
-                    modifier = Modifier
-                        .padding(vertical = 12.dp)
-                        .size(width = 228.dp, height = 21.dp)
+                    modifier =
+                        Modifier
+                            .padding(vertical = 12.dp)
+                            .size(width = 228.dp, height = 21.dp),
                 )
 
                 Spacer(Modifier.height(20.dp))
@@ -197,16 +214,22 @@ private fun MainContent(
                     currentCategory = uiState.currentCategory,
                     onCategoryClicked = onCategoryClicked,
                     onTodayClicked = onTodayClicked,
-                    onAddClicked = { showCategoryDialog = true }
+                    onAddClicked = { showCategoryDialog = true },
+                    onDelete = { showDeleteCategoryDialog = true },
+                    onEdit = {
+                        onCategoryMenuClick(uiState.currentCategory.id)
+                        showCategoryDialog = true
+                    },
                 )
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .background(Gray90)
-                        .padding(horizontal = 20.dp)
-                        .padding(top = 16.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .background(Gray90)
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 16.dp),
                 ) {
                     TextFieldSection(onDone = onEnterClicked)
 
@@ -216,10 +239,10 @@ private fun MainContent(
                         todoList = uiState.currentTodoList,
                         isToday = uiState.currentCategory.id == -2L,
                         onMove = onMove,
-                        onSwiped =onSwiped,
+                        onSwiped = onSwiped,
                         onDeleted = onDeleted,
                         onCheckedChange = onCheckedChange,
-                        onBookmarkClick = onBookmarkClick
+                        onBookmarkClick = onBookmarkClick,
                     )
                 }
             }
@@ -229,9 +252,35 @@ private fun MainContent(
             visible = showCategoryDialog,
             selectedCategory = uiState.selectedCategory,
             groupEmoji = uiState.emojiList,
-            isEdit = false,
-            onDismiss = { showCategoryDialog = false },
-            onCreateClick = onCreateCategory
+            isEdit = uiState.selectedCategory != null,
+            onDismiss = {
+                showCategoryDialog = false
+                onCategoryMenuClick(null)
+            },
+            onDone = { name, emojiId ->
+                if (uiState.selectedCategory == null) {
+                    onCreateCategory(name, emojiId)
+                } else {
+                    onEditCategory(name, emojiId)
+                }
+            },
+        )
+
+        AlertDialog(
+            visible = showDeleteCategoryDialog,
+            title = DIALOG_DELETE_CATEGORY_TITLE,
+            content = DIALOG_DELETE_CATEGORY_CONTENT,
+            positiveText = WORD_CANCEL,
+            negativeText = WORD_DELETE,
+            onPositiveClick = { showDeleteCategoryDialog = false },
+            onNegativeClick = {
+                showDeleteCategoryDialog = false
+                onDeleteCategory()
+            },
+            onDismiss = {
+                showDeleteCategoryDialog = false
+                onCategoryMenuClick(null)
+            },
         )
     }
 }
@@ -243,25 +292,31 @@ private fun CategoryList(
     currentCategory: Category,
     onCategoryClicked: (Int) -> Unit,
     onTodayClicked: () -> Unit,
-    onAddClicked: () -> Unit
+    onAddClicked: () -> Unit,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit,
 ) {
+    var isMenuExpanded by remember { mutableStateOf(false) }
+
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             LazyRow(
-                modifier = Modifier
-                    .weight(1f)
+                modifier =
+                    Modifier
+                        .weight(1f),
             ) {
                 item {
                     CategoryListItem(
                         category = today,
                         isSelected = currentCategory.id == today.id,
-                        onClick = { onTodayClicked() }
+                        onClick = { onTodayClicked() },
                     )
                 }
 
@@ -269,7 +324,17 @@ private fun CategoryList(
                     CategoryListItem(
                         category = item,
                         isSelected = currentCategory.id == item.id,
-                        onClick = { onCategoryClicked(index) }
+                        isMenuExpanded = isMenuExpanded,
+                        onClick = { onCategoryClicked(index) },
+                        onDelete = {
+                            onDelete()
+                            isMenuExpanded = false
+                        },
+                        onEdit = {
+                            onEdit()
+                            isMenuExpanded = false
+                        },
+                        onCategoryMenuClick = { isMenuExpanded = !isMenuExpanded },
                     )
                 }
             }
@@ -278,19 +343,21 @@ private fun CategoryList(
         }
 
         Box(
-            modifier = Modifier
-                .padding(end = 180.dp)
-                .align(Alignment.CenterEnd)
-                .width(50.dp)
-                .height(40.dp)
-                .background(
-                    brush = Brush.horizontalGradient(
-                        listOf(
-                            Gray100.copy(alpha = 0f),
-                            Gray100.copy(alpha = 1f)
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .padding(end = 180.dp)
+                    .align(Alignment.CenterEnd)
+                    .width(50.dp)
+                    .height(40.dp)
+                    .background(
+                        brush =
+                            Brush.horizontalGradient(
+                                listOf(
+                                    Gray100.copy(alpha = 0f),
+                                    Gray100.copy(alpha = 1f),
+                                ),
+                            ),
+                    ),
         )
     }
 }
@@ -303,20 +370,24 @@ private fun TodoList(
     onCheckedChange: (TodoStatus, Long) -> Unit,
     onSwiped: (Long) -> Unit,
     onDeleted: (Long) -> Unit,
-    onBookmarkClick: (Long) -> Unit
+    onBookmarkClick: (Long) -> Unit,
 ) {
     val seenIds = remember { mutableStateListOf<Long>() }
     val headId = todoList.firstOrNull()?.todoId
     val listState: LazyListState = rememberLazyListState()
-    val reorderableLazyListState = rememberReorderableLazyListState(listState) { from, to ->
-        onMove(from.index, to.index)
-    }
+    val reorderableLazyListState =
+        rememberReorderableLazyListState(listState) { from, to ->
+            onMove(from.index, to.index)
+        }
     var previousSize by remember { mutableIntStateOf(todoList.size) }
     val scope = rememberCoroutineScope()
     val swipeAnimDuration = 220
-    var selectedTodoId by remember { mutableStateOf(-1L) }  // 메뉴가 활성화된 투두 ID 저장
+    var selectedTodoId by remember { mutableStateOf(-1L) } // 메뉴가 활성화된 투두 ID 저장
 
-    data class ScrollSnapshot(val index: Int, val offset: Int)
+    data class ScrollSnapshot(
+        val index: Int,
+        val offset: Int,
+    )
     var pendingScrollRestore by remember { mutableStateOf<ScrollSnapshot?>(null) }
 
     LaunchedEffect(todoList) {
@@ -339,41 +410,51 @@ private fun TodoList(
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         state = listState,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        contentPadding = PaddingValues(bottom = 16.dp),
     ) {
-        items(todoList, key = { "${it.todoId}_${it.todoStatus}"  }) { item ->
+        items(todoList, key = { "${it.todoId}_${it.todoStatus}" }) { item ->
             val isNew = remember(item.todoId) { item.todoId !in seenIds }
-            val visibleState = remember(item.todoId) {
-                MutableTransitionState(!isNew).apply { targetState = true }
-            }
+            val visibleState =
+                remember(item.todoId) {
+                    MutableTransitionState(!isNew).apply { targetState = true }
+                }
 
             AnimatedVisibility(
                 visibleState = visibleState,
-                enter = if (isNew)
-                    slideInVertically(initialOffsetY = { -it / 2 }) + fadeIn(tween(220))
-                else EnterTransition.None,
-                exit = slideOutHorizontally(
-                    targetOffsetX = { fullWidth ->
-                        if (isToday) fullWidth else -fullWidth
+                enter =
+                    if (isNew) {
+                        slideInVertically(initialOffsetY = { -it / 2 }) + fadeIn(tween(220))
+                    } else {
+                        EnterTransition.None
                     },
-                    animationSpec = tween(swipeAnimDuration)
-                ) + fadeOut(tween(swipeAnimDuration))
+                exit =
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth ->
+                            if (isToday) fullWidth else -fullWidth
+                        },
+                        animationSpec = tween(swipeAnimDuration),
+                    ) + fadeOut(tween(swipeAnimDuration)),
             ) {
                 ReorderableItem(
                     reorderableLazyListState,
-                    key = item.todoId
+                    key = item.todoId,
                 ) { isDragging ->
                     Box(
-                        modifier = Modifier
-                            .longPressDraggableHandle()
-                            .border(
-                                if (isDragging) BorderStroke(1.dp, Color.White) else BorderStroke(
-                                    0.dp,
-                                    Color.Transparent
-                                ),
-                                RoundedCornerShape(8.dp)
-                            )
-                            .then(if (isDragging) Modifier.zIndex(1f) else Modifier)
+                        modifier =
+                            Modifier
+                                .longPressDraggableHandle()
+                                .border(
+                                    if (isDragging) {
+                                        BorderStroke(1.dp, Color.White)
+                                    } else {
+                                        BorderStroke(
+                                            0.dp,
+                                            Color.Transparent,
+                                        )
+                                    },
+                                    RoundedCornerShape(8.dp),
+                                ).then(if (isDragging) Modifier.zIndex(1f) else Modifier),
                     ) {
                         TodoItem(
                             item = item,
@@ -397,7 +478,10 @@ private fun TodoList(
                             },
                             onBookmarkClick = onBookmarkClick,
                             onTodoMenuClick = { selectedTodoId = it },
-                            onDeleted = { selectedTodoId = -1L; onDeleted(it) }
+                            onDeleted = {
+                                selectedTodoId = -1L
+                                onDeleted(it)
+                            },
                         )
                     }
                 }
@@ -411,21 +495,24 @@ private fun TodoList(
 }
 
 @Composable
-private fun TextFieldSection(
-    onDone: (String) -> Unit
-) {
+private fun TextFieldSection(onDone: (String) -> Unit) {
     var input by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier =
+            Modifier
+                .fillMaxWidth(),
     ) {
         RoundedOutlineTextField(
             value = input,
             onValueChange = { input = it },
             placeholder = PLACEHOLDER_TEXT_FILED,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onDone(input); input = "" })
+            keyboardActions =
+                KeyboardActions(onDone = {
+                    onDone(input)
+                    input = ""
+                }),
         )
     }
 }

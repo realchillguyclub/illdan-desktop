@@ -6,7 +6,6 @@ import com.illdan.desktop.core.ui.base.BaseViewModel
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.enums.TodoType
 import com.illdan.desktop.domain.model.category.Category
-import com.illdan.desktop.domain.model.category.GroupEmoji
 import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.memo.MemoId
 import com.illdan.desktop.domain.model.request.category.CreateCategoryRequest
@@ -15,7 +14,6 @@ import com.illdan.desktop.domain.model.request.todo.CreateTodoRequest
 import com.illdan.desktop.domain.model.request.todo.GetTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.ReorderTodoListRequest
 import com.illdan.desktop.domain.model.request.todo.TodoId
-import com.illdan.desktop.domain.model.today.TodayListInfo
 import com.illdan.desktop.domain.model.todo.Todo
 import com.illdan.desktop.domain.repository.AuthRepository
 import com.illdan.desktop.domain.repository.CategoryRepository
@@ -24,13 +22,14 @@ import com.illdan.desktop.domain.repository.TodoRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class MainViewModel(
     private val authRepository: AuthRepository,
     private val todoRepository: TodoRepository,
     private val categoryRepository: CategoryRepository,
-    private val memoRepository: MemoRepository
-): BaseViewModel<MainUiState>(MainUiState()) {
+    private val memoRepository: MemoRepository,
+) : BaseViewModel<MainUiState>(MainUiState()) {
     private var logger = Logger.withTag("MainViewModel")
     private val emptyMemo = Memo()
     private val saveJobs = mutableMapOf<Long, Job>()
@@ -55,26 +54,19 @@ class MainViewModel(
         updateState(
             uiState.value.copy(
                 currentCategory = uiState.value.todayCategory,
-                currentTodoList = uiState.value.todayList
-            )
+                currentTodoList = uiState.value.todayList,
+            ),
         )
     }
 
-    /**---------------------------------------------카테고리----------------------------------------------*/
+    // ---------------------------------------------카테고리----------------------------------------------
 
     // 카테고리 조회
     private fun getCategoryList() {
-        logger.d { "getCategoryList" }
-        viewModelScope.launch {
-            categoryRepository.getCategoryList().collect {
-                resultResponse(it, ::onSuccessGetCategoryList)
-            }
-        }
-    }
-
-    private fun onSuccessGetCategoryList(result: List<Category>) {
-        logger.d { "categoryList: $result" }
-        updateState(uiState.value.copy(categoryList = result))
+        launchResult(
+            block = { categoryRepository.getCategoryList() },
+            onSuccess = { updateState(uiState.value.copy(categoryList = it)) },
+        )
     }
 
     // 카테고리 선택
@@ -85,105 +77,114 @@ class MainViewModel(
 
         updateState(
             uiState.value.copy(
-                currentCategory = newCategory
-            )
+                currentCategory = newCategory,
+            ),
         )
     }
 
     // 카테고리 이모지 조회
     fun getEmojis() {
-        if (uiState.value.emojiList.groupEmojis.isNotEmpty()) return
-
-        viewModelScope.launch {
-            categoryRepository.getEmojiList().collect {
-                resultResponse(it, ::onSuccessGetEmojis)
-            }
+        if (uiState.value.emojiList.groupEmojis
+                .isNotEmpty()
+        ) {
+            return
         }
-    }
 
-    private fun onSuccessGetEmojis(result: GroupEmoji) {
-        updateState(uiState.value.copy(emojiList = result))
+        launchResult(
+            block = { categoryRepository.getEmojiList() },
+            onSuccess = { updateState(uiState.value.copy(emojiList = it)) },
+        )
     }
 
     // 카테고리 생성
-    fun createCategory(name: String, emojiId: Long) {
-        viewModelScope.launch {
-            categoryRepository.createCategory(request = CreateCategoryRequest(name, emojiId)).collect {
-                resultResponse(it, ::onSuccessCreateCategory)
-            }
-        }
+    fun createCategory(
+        name: String,
+        emojiId: Long,
+    ) {
+        launchResult(
+            block = { categoryRepository.createCategory(request = CreateCategoryRequest(name, emojiId)) },
+            onSuccess = { getCategoryList() },
+        )
     }
 
-    private fun onSuccessCreateCategory(result: Unit) {
-        getCategoryList()
+    // 메뉴 전용 카테고리 업데이트
+    fun updateSelectedCategory(id: Long?) {
+        val category = currentState.categoryList.find { it.id == id }
+
+        updateState(uiState.value.copy(selectedCategory = category))
     }
 
-    /**---------------------------------------------오늘----------------------------------------------*/
+    // 카테고리 수정
+    fun updateCategory(
+        name: String,
+        emojiId: Long,
+    ) {
+        launchResult(
+            block = { categoryRepository.updateCategory(currentState.currentCategory.id, name, emojiId) },
+            onSuccess = { getCategoryList() },
+        )
+    }
+
+    // 카테고리 삭제
+    fun deleteCategory() {
+        val categoryIndex = currentState.categoryList.indexOfFirst { it.id == currentState.currentCategory.id }
+
+        if (categoryIndex == -1) return
+
+        launchResult(
+            block = { categoryRepository.deleteCategory(currentState.currentCategory.id) },
+            onSuccess = {
+                getCategoryList()
+                updateCurrentCategory(categoryIndex - 1)
+            },
+        )
+    }
+
+    // ---------------------------------------------오늘----------------------------------------------
 
     // 오늘 할 일 조회
     fun getTodayList() {
         updateState(uiState.value.copy(currentCategory = uiState.value.todayCategory))
 
-        viewModelScope.launch {
-            todoRepository.getTodayList().collect {
-                resultResponse(it, ::onSuccessGetTodayList)
-            }
-        }
-    }
-
-    private fun onSuccessGetTodayList(result: TodayListInfo) {
-        updateState(
-            uiState.value.copy(
-                todayList = result.todays,
-                currentTodoList = result.todays
-            )
+        launchResult(
+            block = { todoRepository.getTodayList() },
+            onSuccess = { updateState(uiState.value.copy(todayList = it.todays, currentTodoList = it.todays)) },
         )
     }
 
     /**---------------------------------------------할 일 조회----------------------------------------------*/
     private fun getTodoList(category: Category) {
-        viewModelScope.launch {
-            todoRepository.getTodoList(request = GetTodoListRequest(categoryId = category.id)).collect {
-                resultResponse(it, ::onSuccessGetTodoList)
-            }
-        }
-    }
-
-    private fun onSuccessGetTodoList(result: List<Todo>) {
-        updateState(uiState.value.copy(currentTodoList = result))
+        launchResult(
+            block = { todoRepository.getTodoList(request = GetTodoListRequest(categoryId = category.id)) },
+            onSuccess = { updateState(uiState.value.copy(currentTodoList = it)) },
+        )
     }
 
     /**---------------------------------------------할 일 생성----------------------------------------------*/
     fun createTodo(input: String) {
-        viewModelScope.launch {
-            val curCategoryId = uiState.value.currentCategory.id
+        val curCategoryId = currentState.currentCategory.id
 
-            if (curCategoryId != -2L) {
-                todoRepository.createTodo(request = CreateTodoRequest(content = input, categoryId = curCategoryId)).collect {
-                    resultResponse(it, { onSuccessCreateTodo(uiState.value.currentCategory) })
-                }
-            }
-        }
-    }
+        if (curCategoryId == -2L) return
 
-    private fun onSuccessCreateTodo(category: Category) {
-        getTodoList(category)
+        launchResult(
+            block = { todoRepository.createTodo(request = CreateTodoRequest(content = input, categoryId = curCategoryId)) },
+            onSuccess = { getTodoList(currentState.currentCategory) },
+        )
     }
 
     /**---------------------------------------------할 일 스와이프----------------------------------------------*/
     fun swipeTodo(todoId: Long) {
-        val newList = uiState.value.currentTodoList.filter { it.todoId != todoId }
-        updateState(uiState.value.copy(currentTodoList = newList))
+        val newList = currentState.currentTodoList.filter { it.todoId != todoId }
+        updateState(currentState.copy(currentTodoList = newList))
 
-        viewModelScope.launch {
-            todoRepository.swipeTodo(request = TodoId(todoId)).collect {
-                resultResponse(it, ::onSuccessSwipeTodo)
-            }
-        }
+        launchResult(
+            block = { todoRepository.swipeTodo(request = TodoId(todoId)) },
+            onSuccess = { onSuccessSwipeTodo(it) },
+        )
     }
 
     private fun onSuccessSwipeTodo(result: Unit) {
-        val category = uiState.value.currentCategory
+        val category = currentState.currentCategory
 
         if (category.id == -2L) {
             getTodayList()
@@ -193,7 +194,10 @@ class MainViewModel(
     }
 
     /**---------------------------------------------할 일 체크----------------------------------------------*/
-    fun updateTodoStatus(currentStatus: TodoStatus, id: Long) {
+    fun updateTodoStatus(
+        currentStatus: TodoStatus,
+        id: Long,
+    ) {
         val todo = uiState.value.todayList.firstOrNull { it.todoId == id }
 
         if (todo == null) return
@@ -214,19 +218,15 @@ class MainViewModel(
         updateState(
             uiState.value.copy(
                 todayList = newList,
-                currentTodoList = if (uiState.value.currentCategory.id == -2L) newList else uiState.value.currentTodoList
-            )
+                currentTodoList = if (uiState.value.currentCategory.id == -2L) newList else uiState.value.currentTodoList,
+            ),
         )
 
-        viewModelScope.launch {
-            todoRepository.updateTodoStatus(todoId = id).collect {
-                resultResponse(it, {}, ::onFailUpdateTodoStatus)
-            }
-        }
-    }
-
-    private fun onFailUpdateTodoStatus(e: Throwable) {
-        getTodayList()
+        launchResult(
+            block = { todoRepository.updateTodoStatus(todoId = id) },
+            onSuccess = {},
+            onError = { getTodayList() },
+        )
     }
 
     /**---------------------------------------------할 일 북마크----------------------------------------------*/
@@ -234,11 +234,11 @@ class MainViewModel(
     fun updateTodoBookmark(todoId: Long) {
         updateTodoBookmarkInUI(todoId)
 
-        viewModelScope.launch {
-            todoRepository.updateTodoBookmark(todoId = todoId).collect {
-                resultResponse(it, {}, ::onFailUpdateTodoBookmark)
-            }
-        }
+        launchResult(
+            block = { todoRepository.updateTodoBookmark(todoId = todoId) },
+            onSuccess = {},
+            onError = { getTodoList(category = currentState.currentCategory) },
+        )
     }
 
     private fun updateTodoBookmarkInUI(todoId: Long) {
@@ -252,13 +252,12 @@ class MainViewModel(
         updateState(uiState.value.copy(currentTodoList = newList))
     }
 
-    private fun onFailUpdateTodoBookmark(e: Throwable) {
-        getTodoList(category = uiState.value.currentCategory)
-    }
-
     /**---------------------------------------------할 일 드래그 앤 드롭----------------------------------------------*/
 
-    fun onMove(from: Int, to: Int) {
+    fun onMove(
+        from: Int,
+        to: Int,
+    ) {
         val currentList = uiState.value.currentTodoList.toMutableList()
 
         if (currentList[from].todoStatus == TodoStatus.COMPLETED || currentList[to].todoStatus == TodoStatus.COMPLETED) return
@@ -272,15 +271,15 @@ class MainViewModel(
         val todoIdList = newList.map { it.todoId }
         val todoType = if (uiState.value.currentCategory.id == -2L) TodoType.TODAY else TodoType.BACKLOG
 
-        viewModelScope.launch {
-            todoRepository.reorderTodoList(request = ReorderTodoListRequest(type = todoType.name, todoIds = todoIdList)).collect {
-                resultResponse(it, {}, { onFailReorderTodoList(todoType) })
-            }
-        }
+        launchResult(
+            block = { todoRepository.reorderTodoList(request = ReorderTodoListRequest(type = todoType.name, todoIds = todoIdList)) },
+            onSuccess = {},
+            onError = { onFailureReorderTodoList(todoType) },
+        )
     }
 
-    private fun onFailReorderTodoList(todoType: TodoType) {
-        when(todoType) {
+    private fun onFailureReorderTodoList(todoType: TodoType) {
+        when (todoType) {
             TodoType.TODAY -> getTodayList()
             TodoType.BACKLOG -> getTodoList(uiState.value.currentCategory)
         }
@@ -289,14 +288,12 @@ class MainViewModel(
     /**---------------------------------------------할 일 삭제----------------------------------------------*/
 
     fun deleteTodo(id: Long) {
-        viewModelScope.launch {
-            deleteTodoInUI(id)
+        deleteTodoInUI(id)
 
-            resultResponse(
-                response = todoRepository.deleteTodo(id),
-                successCallback = ::onSuccessDeleteTodo
-            )
-        }
+        launchResult(
+            block = { todoRepository.deleteTodo(id) },
+            onSuccess = { logger.d { "할 일 삭제 성공" } },
+        )
     }
 
     private fun deleteTodoInUI(id: Long) {
@@ -305,32 +302,30 @@ class MainViewModel(
         updateStateSync(uiState.value.copy(currentTodoList = newList))
     }
 
-    private fun onSuccessDeleteTodo(result: Unit) {
-        logger.d { "할 일 삭제 성공" }
-    }
-
-    /**---------------------------------------------메모----------------------------------------------*/
+    // ---------------------------------------------메모----------------------------------------------
 
     // 메모 생성
     fun createMemo() {
-        viewModelScope.launch {
-            memoRepository.saveMemo(request = SaveMemoRequest("", "")).collect {
-                resultResponse(it, ::onSuccessCreateMemo)
-            }
-        }
+        launchResult(
+            block = { memoRepository.saveMemo(request = SaveMemoRequest("", "")) },
+            onSuccess = { onSuccessCreateMemo(it) },
+        )
     }
 
     private fun onSuccessCreateMemo(result: MemoId) {
-        val curList = uiState.value.memoList.toMutableList()
+        val curList = currentState.memoList.toMutableList()
         val newMemo = Memo(noteId = result.memoId, title = "", content = "")
         curList.add(0, newMemo)
 
-        updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = newMemo))
+        updateStateSync(currentState.copy(memoList = curList, selectedMemo = newMemo))
     }
 
     // 메모 저장
-    fun saveMemo(id: Long, input: Pair<String, String>) {
-        val memo = uiState.value.memoList.firstOrNull { it.noteId == id }
+    fun saveMemo(
+        id: Long,
+        input: Pair<String, String>,
+    ) {
+        val memo = currentState.memoList.firstOrNull { it.noteId == id }
 
         if (memo == null) {
             logger.d { "수정할 메모를 찾지 못했습니다. id: $id" }
@@ -343,20 +338,25 @@ class MainViewModel(
 
         // 서버 저장은 debounce
         saveJobs[id]?.cancel()
-        saveJobs[id] = viewModelScope.launch {
-            delay(400) // debounce window
-            memoRepository
-                .updateMemo(updatedMemo.noteId, SaveMemoRequest(updatedMemo.title, updatedMemo.content))
-                .collect { result ->
-                    resultResponse(result, ::onSuccessSaveMemo)
-                }
-        }
+        saveJobs[id] =
+            viewModelScope.launch {
+                delay(400) // debounce window
+                val response = memoRepository.updateMemo(updatedMemo.noteId, SaveMemoRequest(updatedMemo.title, updatedMemo.content))
+                response.fold(
+                    onSuccess = { onSuccessSaveMemo(it) },
+                    onFailure = { t ->
+                        if (t is CancellationException) throw t
+                        logger.e { "메모 저장 실패(noteId=${updatedMemo.noteId}): ${t.stackTraceToString()}" }
+                    },
+                )
+            }
     }
 
     private fun onSuccessSaveMemo(result: Pair<Long, String>) {
-        val updatedList = uiState.value.memoList.map {
-            if (it.noteId == result.first) it.copy(modifyDate = result.second) else it
-        }
+        val updatedList =
+            uiState.value.memoList.map {
+                if (it.noteId == result.first) it.copy(modifyDate = result.second) else it
+            }
 
         updateStateSync(uiState.value.copy(memoList = updatedList))
     }
@@ -377,31 +377,28 @@ class MainViewModel(
 
         if (memo == null) {
             updateState(uiState.value.copy(selectedMemo = emptyMemo))
-        } else updateState(uiState.value.copy(selectedMemo = memo))
+        } else {
+            updateState(uiState.value.copy(selectedMemo = memo))
+        }
     }
 
     // 메모 리스트 조회
     fun getMemoList() {
-        viewModelScope.launch {
-            memoRepository.getMemoList().collect {
-                resultResponse(it, ::onSuccessGetMemoList)
-            }
-        }
-    }
-
-    private fun onSuccessGetMemoList(result: List<Memo>) {
-        updateState(uiState.value.copy(memoList = result))
+        launchResult(
+            block = { memoRepository.getMemoList() },
+            onSuccess = { updateState(uiState.value.copy(memoList = it)) },
+        )
     }
 
     // 메모 삭제
     fun deleteMemo(memoId: Long) {
         deleteMemoInUI(memoId)
 
-        viewModelScope.launch {
-            memoRepository.deleteMemo(memoId).collect {
-                resultResponse(it, {}, ::onFailDeleteMemo)
-            }
-        }
+        launchResult(
+            block = { memoRepository.deleteMemo(memoId) },
+            onSuccess = {},
+            onError = ::onFailureDeleteMemo,
+        )
     }
 
     private fun deleteMemoInUI(memoId: Long) {
@@ -415,7 +412,7 @@ class MainViewModel(
         updateStateSync(uiState.value.copy(memoList = curList, selectedMemo = emptyMemo))
     }
 
-    private fun onFailDeleteMemo(e: Throwable) {
+    private fun onFailureDeleteMemo(e: Throwable) {
         logger.e { "메모 삭제 실패: ${e.message}" }
         getMemoList()
     }
@@ -428,7 +425,10 @@ class MainViewModel(
     }
 }
 
-fun <T> MutableList<T>.move(from: Int, to: Int) {
+fun <T> MutableList<T>.move(
+    from: Int,
+    to: Int,
+) {
     if (from == to) return
     if (from !in 0 until size || to !in 0..size) return
     val element = this.removeAt(from) ?: return

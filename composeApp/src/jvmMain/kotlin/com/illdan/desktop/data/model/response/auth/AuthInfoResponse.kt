@@ -7,5 +7,5 @@ data class AuthInfoResponse(
     val accessToken: String,
     val refreshToken: String,
     val isNewUser: Boolean,
-    val userId: Long
+    val userId: Long,
 )
