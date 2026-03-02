@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -353,6 +354,7 @@ private fun TodoList(
         modifier = Modifier.fillMaxWidth(),
         state = listState,
         verticalArrangement = Arrangement.spacedBy(6.dp),
+        contentPadding = PaddingValues(bottom = 16.dp),
     ) {
         items(todoList, key = { "${it.todoId}_${it.todoStatus}" }) { item ->
             val isNew = remember(item.todoId) { item.todoId !in seenIds }
