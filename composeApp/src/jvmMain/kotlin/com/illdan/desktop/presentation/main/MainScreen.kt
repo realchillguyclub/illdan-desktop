@@ -54,9 +54,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.illdan.desktop.core.designsystem.DIALOG_DELETE_CATEGORY_CONTENT
+import com.illdan.desktop.core.designsystem.DIALOG_DELETE_CATEGORY_TITLE
 import com.illdan.desktop.core.designsystem.Gray100
 import com.illdan.desktop.core.designsystem.Gray90
 import com.illdan.desktop.core.designsystem.PLACEHOLDER_TEXT_FILED
+import com.illdan.desktop.core.designsystem.WORD_CANCEL
+import com.illdan.desktop.core.designsystem.WORD_DELETE
 import com.illdan.desktop.core.designsystem.components.AddCategoryButton
 import com.illdan.desktop.core.designsystem.components.CategoryDialog
 import com.illdan.desktop.core.designsystem.components.CategoryListItem
@@ -64,6 +68,7 @@ import com.illdan.desktop.core.designsystem.components.MemoBar
 import com.illdan.desktop.core.designsystem.components.RoundedOutlineTextField
 import com.illdan.desktop.core.designsystem.components.SideBar
 import com.illdan.desktop.core.designsystem.components.TodoItem
+import com.illdan.desktop.core.designsystem.components.dialog.AlertDialog
 import com.illdan.desktop.domain.enums.TodoStatus
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.todo.Todo
@@ -144,6 +149,7 @@ private fun MainContent(
     onLogout: () -> Unit,
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
+    var showDeleteCategoryDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier =
@@ -204,6 +210,7 @@ private fun MainContent(
                     onCategoryClicked = onCategoryClicked,
                     onTodayClicked = onTodayClicked,
                     onAddClicked = { showCategoryDialog = true },
+                    onDelete = { showDeleteCategoryDialog = true },
                 )
 
                 Column(
@@ -240,6 +247,17 @@ private fun MainContent(
             onDismiss = { showCategoryDialog = false },
             onCreateClick = onCreateCategory,
         )
+
+        AlertDialog(
+            visible = showDeleteCategoryDialog,
+            title = DIALOG_DELETE_CATEGORY_TITLE,
+            content = DIALOG_DELETE_CATEGORY_CONTENT,
+            positiveText = WORD_CANCEL,
+            negativeText = WORD_DELETE,
+            onPositiveClick = { showDeleteCategoryDialog = false },
+            onNegativeClick = { showDeleteCategoryDialog = false },
+            onDismiss = { showDeleteCategoryDialog = false },
+        )
     }
 }
 
@@ -251,6 +269,7 @@ private fun CategoryList(
     onCategoryClicked: (Int) -> Unit,
     onTodayClicked: () -> Unit,
     onAddClicked: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
 
@@ -282,7 +301,10 @@ private fun CategoryList(
                         isSelected = currentCategory.id == item.id,
                         isMenuExpanded = isMenuExpanded,
                         onClick = { onCategoryClicked(index) },
-                        onDelete = { isMenuExpanded = false },
+                        onDelete = {
+                            onDelete()
+                            isMenuExpanded = false
+                        },
                         onEdit = { isMenuExpanded = false },
                         onCategoryMenuClick = { isMenuExpanded = !isMenuExpanded },
                     )
