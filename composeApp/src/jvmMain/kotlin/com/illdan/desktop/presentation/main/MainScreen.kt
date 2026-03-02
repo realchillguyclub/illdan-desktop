@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -251,6 +252,8 @@ private fun CategoryList(
     onTodayClicked: () -> Unit,
     onAddClicked: () -> Unit,
 ) {
+    var isMenuExpanded by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -277,7 +280,11 @@ private fun CategoryList(
                     CategoryListItem(
                         category = item,
                         isSelected = currentCategory.id == item.id,
+                        isMenuExpanded = isMenuExpanded,
                         onClick = { onCategoryClicked(index) },
+                        onDelete = { isMenuExpanded = false },
+                        onEdit = { isMenuExpanded = false },
+                        onCategoryMenuClick = { isMenuExpanded = !isMenuExpanded },
                     )
                 }
             }
