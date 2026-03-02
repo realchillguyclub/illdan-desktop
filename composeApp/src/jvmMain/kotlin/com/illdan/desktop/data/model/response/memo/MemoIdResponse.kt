@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MemoIdResponse(
-    val noteId: Long
+    val noteId: Long,
 )

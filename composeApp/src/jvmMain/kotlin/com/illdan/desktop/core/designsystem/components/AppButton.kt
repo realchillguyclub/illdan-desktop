@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.illdan.desktop.core.design_system.Gray90
-import com.illdan.desktop.core.design_system.Primary40
+import com.illdan.desktop.core.designsystem.Gray90
+import com.illdan.desktop.core.designsystem.Primary40
 import com.illdan.desktop.domain.enums.AppTextStyle
 
 @Composable
@@ -22,15 +22,16 @@ fun AppButton(
     textColor: Color = Gray90,
     buttonColor: Color = Primary40,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .background(buttonColor, RoundedCornerShape(12.dp))
-            .clickable { onClick() }
-            .padding(vertical = 15.dp)
-            .clip(RoundedCornerShape(12.dp)),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .background(buttonColor, RoundedCornerShape(12.dp))
+                .clickable { onClick() }
+                .padding(vertical = 15.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        contentAlignment = Alignment.Center,
     ) {
         AppText(text = text, color = textColor, style = textStyle)
     }

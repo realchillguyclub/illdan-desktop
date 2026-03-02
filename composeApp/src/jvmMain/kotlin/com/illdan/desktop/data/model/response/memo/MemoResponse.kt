@@ -7,5 +7,5 @@ data class MemoResponse(
     val noteId: Long,
     val title: String?,
     val content: String?,
-    val modifyDate: String
+    val modifyDate: String,
 )

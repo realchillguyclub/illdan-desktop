@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +20,7 @@ fun AppText(
     color: Color = Color.Unspecified,
     textAlign: TextAlign? = null,
     maxLines: Int = Int.MAX_VALUE,
-    overflow: TextOverflow = TextOverflow.Clip
+    overflow: TextOverflow = TextOverflow.Clip,
 ) {
     val textStyle = style.toTextStyle()
 
@@ -32,7 +32,7 @@ fun AppText(
             modifier = modifier,
             textAlign = textAlign,
             maxLines = maxLines,
-            overflow = overflow
+            overflow = overflow,
         )
     }
 }

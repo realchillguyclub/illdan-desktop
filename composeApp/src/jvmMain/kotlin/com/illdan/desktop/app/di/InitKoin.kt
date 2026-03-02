@@ -19,8 +19,8 @@ fun initKoin() {
                 networkModule,
                 repositoryModule,
                 mainModule,
-                loginModule
-            )
+                loginModule,
+            ),
         )
     }
 }

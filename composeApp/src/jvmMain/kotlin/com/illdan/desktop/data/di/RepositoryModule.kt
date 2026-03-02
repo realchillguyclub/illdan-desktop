@@ -10,9 +10,10 @@ import com.illdan.desktop.domain.repository.MemoRepository
 import com.illdan.desktop.domain.repository.TodoRepository
 import org.koin.dsl.module
 
-val repositoryModule = module {
-    single<TodoRepository> { TodoRepositoryImpl(get(), get()) }
-    single<AuthRepository> { AuthRepositoryImpl(get()) }
-    single<CategoryRepository> { CategoryRepositoryImpl(get()) }
-    single<MemoRepository> { MemoRepositoryImpl(get()) }
-}
+val repositoryModule =
+    module {
+        single<TodoRepository> { TodoRepositoryImpl(get(), get()) }
+        single<AuthRepository> { AuthRepositoryImpl(get()) }
+        single<CategoryRepository> { CategoryRepositoryImpl(get()) }
+        single<MemoRepository> { MemoRepositoryImpl(get()) }
+    }

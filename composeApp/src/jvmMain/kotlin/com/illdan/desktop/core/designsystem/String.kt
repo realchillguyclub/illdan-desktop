@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system
+package com.illdan.desktop.core.designsystem
 
 const val WORD_NOTEPAD = "메모장"
 const val WORD_BOOKMARK = "중요"

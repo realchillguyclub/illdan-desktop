@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ModifiedMemoResponse(
     val noteId: Long,
-    val modifyDate: String
+    val modifyDate: String,
 )

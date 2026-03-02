@@ -6,14 +6,15 @@ import com.illdan.desktop.data.local.db.TodoStatusAdapter
 import com.illdan.desktop.local.db.TodoEntity
 import org.koin.dsl.module
 
-val databaseModule = module {
-    single<AppDatabase> {
-        AppDatabase(
-            get(),
-            TodoEntity.Adapter(
-                todoStatusAdapter = TodoStatusAdapter,
-                routineDaysAdapter = RoutineDaysAdapter
+val databaseModule =
+    module {
+        single<AppDatabase> {
+            AppDatabase(
+                get(),
+                TodoEntity.Adapter(
+                    todoStatusAdapter = TodoStatusAdapter,
+                    routineDaysAdapter = RoutineDaysAdapter,
+                ),
             )
-        )
+        }
     }
-}

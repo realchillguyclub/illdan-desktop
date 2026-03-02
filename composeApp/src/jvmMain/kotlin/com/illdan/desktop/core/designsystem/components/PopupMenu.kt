@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -29,19 +29,19 @@ fun PopupMenu(
     containerColor: Color,
     properties: PopupProperties = PopupProperties(focusable = true),
     onDismiss: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Popup(
         alignment = alignment,
         offset = offset,
         properties = properties,
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismiss,
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
             color = containerColor,
             tonalElevation = 0.dp,
-            shadowElevation = 8.dp
+            shadowElevation = 8.dp,
         ) {
             content()
         }
@@ -54,21 +54,22 @@ fun PopupMenuItem(
     iconColor: Color,
     text: String,
     textColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(start = 12.dp, end = 16.dp)
-            .padding(vertical = 10.dp),
+        modifier =
+            Modifier
+                .clickable(onClick = onClick)
+                .padding(start = 12.dp, end = 16.dp)
+                .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Image(
             painter = icon,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
-            colorFilter = ColorFilter.tint(iconColor)
+            colorFilter = ColorFilter.tint(iconColor),
         )
 
         Spacer(Modifier.width(4.dp))

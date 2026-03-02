@@ -23,66 +23,69 @@ import okhttp3.ConnectionPool
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalSerializationApi::class)
-fun httpClient(): HttpClient = HttpClient(OkHttp) {
-    install(ContentNegotiation) {
-        json(
+fun httpClient(): HttpClient =
+    HttpClient(OkHttp) {
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    explicitNulls = false
+                    encodeDefaults = true
+                },
+            )
+        }
+
+        val prettyJson =
             Json {
+                prettyPrint = true
+                prettyPrintIndent = "  "
                 ignoreUnknownKeys = true
                 isLenient = true
-                explicitNulls = false
                 encodeDefaults = true
             }
-        )
-    }
 
-    val prettyJson = Json {
-        prettyPrint        = true
-        prettyPrintIndent  = "  "
-        ignoreUnknownKeys  = true
-        isLenient          = true
-        encodeDefaults     = true
-    }
-
-    install(DefaultRequest) {
-        headers {
-            accept(ContentType.Application.Json)
-            contentType(ContentType.Application.Json)
+        install(DefaultRequest) {
+            headers {
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+            }
         }
-    }
 
-    install(HttpTimeout) {
-        requestTimeoutMillis = 30_000
-        connectTimeoutMillis = 15_000
-        socketTimeoutMillis = 30_000
-    }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 15_000
+            socketTimeoutMillis = 30_000
+        }
 
-    install(ResponseObserver) {
-        onResponse { response ->
-            if (response.status.value in 200..299 &&
-                response.headers[HttpHeaders.ContentType]?.startsWith("application/json") == true) {
-                val text = response.bodyAsText()
+        install(ResponseObserver) {
+            onResponse { response ->
+                if (response.status.value in 200..299 &&
+                    response.headers[HttpHeaders.ContentType]?.startsWith("application/json") == true
+                ) {
+                    val text = response.bodyAsText()
 
-                try {
-                    val element = prettyJson.parseToJsonElement(text)
-                    println("Ktor ▶\n${prettyJson.encodeToString(element)}")
-                } catch (_: Exception) {
-                    println("Ktor ▶\n$text")
+                    try {
+                        val element = prettyJson.parseToJsonElement(text)
+                        println("Ktor ▶\n${prettyJson.encodeToString(element)}")
+                    } catch (_: Exception) {
+                        println("Ktor ▶\n$text")
+                    }
                 }
             }
         }
-    }
 
-    install(Logging) {
-        logger = Logger.SIMPLE
-        level = LogLevel.BODY
-    }
-
-    engine {
-        config {
-            retryOnConnectionFailure(true)
-            connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
+        install(Logging) {
+            logger = Logger.SIMPLE
+            level = LogLevel.BODY
         }
-    }
 
-    expectSuccess = false
-}
+        engine {
+            config {
+                retryOnConnectionFailure(true)
+                connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
+            }
+        }
+
+        expectSuccess = false
+    }

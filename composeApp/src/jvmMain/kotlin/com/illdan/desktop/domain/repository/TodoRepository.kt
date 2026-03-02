@@ -9,13 +9,21 @@ import com.illdan.desktop.domain.model.todo.Todo
 import kotlinx.coroutines.flow.Flow
 
 interface TodoRepository {
-    suspend fun getTodayList(): Flow<Result<TodayListInfo>>
-    suspend fun getTodoList(request: GetTodoListRequest): Flow<Result<List<Todo>>>
-    suspend fun createTodo(request: CreateTodoRequest): Flow<Result<Unit>>
-    suspend fun swipeTodo(request: TodoId): Flow<Result<Unit>>
-    suspend fun reorderTodoList(request: ReorderTodoListRequest): Flow<Result<Unit>>
-    suspend fun updateTodoStatus(todoId: Long): Flow<Result<Unit>>
-    suspend fun updateTodoBookmark(todoId: Long): Flow<Result<Unit>>
+    suspend fun getTodayList(): Result<TodayListInfo>
+
+    suspend fun getTodoList(request: GetTodoListRequest): Result<List<Todo>>
+
+    suspend fun createTodo(request: CreateTodoRequest): Result<Unit>
+
+    suspend fun swipeTodo(request: TodoId): Result<Unit>
+
+    suspend fun reorderTodoList(request: ReorderTodoListRequest): Result<Unit>
+
+    suspend fun updateTodoStatus(todoId: Long): Result<Unit>
+
+    suspend fun updateTodoBookmark(todoId: Long): Result<Unit>
+
     suspend fun createLocalTodo(todo: Todo): Flow<Result<Unit>>
+
     suspend fun deleteTodo(todoId: Long): Result<Unit>
 }

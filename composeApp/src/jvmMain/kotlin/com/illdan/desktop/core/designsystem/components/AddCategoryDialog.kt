@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
@@ -36,16 +36,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.illdan.desktop.core.design_system.ACTION_CLOSE
-import com.illdan.desktop.core.design_system.ACTION_CREATE
-import com.illdan.desktop.core.design_system.ADD_CATEGORY_DIALOG_TITLE
-import com.illdan.desktop.core.design_system.EDIT_CATEGORY_DIALOG_TITLE
-import com.illdan.desktop.core.design_system.Gray00
-import com.illdan.desktop.core.design_system.Gray40
-import com.illdan.desktop.core.design_system.Gray60
-import com.illdan.desktop.core.design_system.Gray90
-import com.illdan.desktop.core.design_system.Gray95
-import com.illdan.desktop.core.design_system.PLACEHOLDER_CATEGORY_TEXT_FIELD
+import com.illdan.desktop.core.designsystem.ACTION_CLOSE
+import com.illdan.desktop.core.designsystem.ACTION_CREATE
+import com.illdan.desktop.core.designsystem.ADD_CATEGORY_DIALOG_TITLE
+import com.illdan.desktop.core.designsystem.EDIT_CATEGORY_DIALOG_TITLE
+import com.illdan.desktop.core.designsystem.Gray00
+import com.illdan.desktop.core.designsystem.Gray40
+import com.illdan.desktop.core.designsystem.Gray60
+import com.illdan.desktop.core.designsystem.Gray90
+import com.illdan.desktop.core.designsystem.Gray95
+import com.illdan.desktop.core.designsystem.PLACEHOLDER_CATEGORY_TEXT_FIELD
 import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.model.category.Category
 import com.illdan.desktop.domain.model.category.Emoji
@@ -58,7 +58,7 @@ fun CategoryDialog(
     groupEmoji: GroupEmoji,
     isEdit: Boolean = false,
     onDismiss: () -> Unit,
-    onCreateClick: (String, Long) -> Unit
+    onCreateClick: (String, Long) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var emoji by remember { mutableStateOf(Emoji()) }
@@ -66,10 +66,11 @@ fun CategoryDialog(
 
     LaunchedEffect(visible, selectedCategory?.id) {
         if (visible) {
-            emoji = Emoji(
-                imageUrl = selectedCategory?.imageUrl.orEmpty(),
-                emojiId = selectedCategory?.emojiId ?: -1L
-            )
+            emoji =
+                Emoji(
+                    imageUrl = selectedCategory?.imageUrl.orEmpty(),
+                    emojiId = selectedCategory?.emojiId ?: -1L,
+                )
             categoryName = selectedCategory?.name.orEmpty()
         }
     }
@@ -80,42 +81,43 @@ fun CategoryDialog(
         content = {
             BoxWithConstraints(
                 Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 // 현재 창 높이
                 val h = maxHeight
 
-                val verticalPadding = when {
-                    h <= 450.dp -> 10.dp
-                    h <= 520.dp -> 30.dp
-                    else -> 60.dp
-                }
+                val verticalPadding =
+                    when {
+                        h <= 450.dp -> 10.dp
+                        h <= 520.dp -> 30.dp
+                        else -> 60.dp
+                    }
 
                 Column(
-                    modifier = Modifier
-                        .padding(vertical = verticalPadding)
-                        .aspectRatio(568f / 475f)
-                        .background(Gray95, RoundedCornerShape(24.dp))
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                            onClick = {}
-                        )
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier =
+                        Modifier
+                            .padding(vertical = verticalPadding)
+                            .aspectRatio(568f / 475f)
+                            .background(Gray95, RoundedCornerShape(24.dp))
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = {},
+                            ).padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     DialogTitle(isEdit)
                     Spacer(Modifier.height(40.dp))
                     CategoryInfoSection(
                         selectedEmojiUrl = emoji.imageUrl,
                         categoryName = categoryName,
-                        onValueChange = { categoryName = it }
+                        onValueChange = { categoryName = it },
                     )
                     Spacer(Modifier.height(40.dp))
                     EmojiList(
                         modifier = Modifier.weight(1f),
                         groupEmoji = groupEmoji,
-                        onEmojiSelected = { emoji = it }
+                        onEmojiSelected = { emoji = it },
                     )
                     Spacer(Modifier.height(36.dp))
                     ActionButtons(onCloseClick = onDismiss, onCreateClick = {
@@ -124,18 +126,16 @@ fun CategoryDialog(
                     })
                 }
             }
-        }
+        },
     )
 }
 
 @Composable
-private fun DialogTitle(
-    isEdit: Boolean
-) {
+private fun DialogTitle(isEdit: Boolean) {
     AppText(
         text = if (isEdit) EDIT_CATEGORY_DIALOG_TITLE else ADD_CATEGORY_DIALOG_TITLE,
         style = AppTextStyle.lgMedium,
-        color = Gray00
+        color = Gray00,
     )
 }
 
@@ -143,18 +143,19 @@ private fun DialogTitle(
 private fun CategoryInfoSection(
     selectedEmojiUrl: String,
     categoryName: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (selectedEmojiUrl.isNotBlank()) {
             AsyncImage(
                 model = selectedEmojiUrl,
                 contentDescription = null,
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(44.dp),
             )
         } else {
             Box(modifier = Modifier.size(44.dp).background(Gray90, RoundedCornerShape(12.dp)))
@@ -174,14 +175,15 @@ private fun CategoryInfoSection(
 private fun EmojiList(
     modifier: Modifier,
     groupEmoji: GroupEmoji,
-    onEmojiSelected: (Emoji) -> Unit
+    onEmojiSelected: (Emoji) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
     val groups = remember(groupEmoji) { groupEmoji.groupEmojis.entries.toList() }
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier =
+            modifier
+                .fillMaxWidth(),
     ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(10),
@@ -189,25 +191,25 @@ private fun EmojiList(
             modifier = Modifier.fillMaxSize().padding(end = 14.dp),
             contentPadding = PaddingValues(bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             groups.forEach { (groupName, emojis) ->
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     AppText(
                         text = groupName,
                         style = AppTextStyle.smMedium,
-                        color = Gray60
+                        color = Gray60,
                     )
                 }
 
                 // 그룹 이모지들
                 items(
                     items = emojis,
-                    key = { it.emojiId }
+                    key = { it.emojiId },
                 ) { emoji ->
                     EmojiGridItem(
                         emoji = emoji,
-                        onClick = { onEmojiSelected(emoji) }
+                        onClick = { onEmojiSelected(emoji) },
                     )
                 }
 
@@ -220,9 +222,10 @@ private fun EmojiList(
 
         VerticalScrollbar(
             adapter = rememberScrollbarAdapter(gridState),
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
+            modifier =
+                Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight(),
         )
     }
 }
@@ -231,24 +234,25 @@ private fun EmojiList(
 private fun EmojiGridItem(
     emoji: Emoji,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
-        modifier = modifier
-            .size(32.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .size(32.dp)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick,
+                ),
+        contentAlignment = Alignment.Center,
     ) {
         AsyncImage(
             model = emoji.imageUrl,
             contentDescription = null,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
@@ -256,12 +260,13 @@ private fun EmojiGridItem(
 @Composable
 private fun ActionButtons(
     onCloseClick: () -> Unit,
-    onCreateClick: () -> Unit
+    onCreateClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AppButton(
             text = ACTION_CLOSE,
@@ -269,7 +274,7 @@ private fun ActionButtons(
             textStyle = AppTextStyle.lgMedium,
             buttonColor = Gray90,
             onClick = onCloseClick,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
 
         Spacer(Modifier.width(10.dp))
@@ -277,7 +282,7 @@ private fun ActionButtons(
         AppButton(
             text = ACTION_CREATE,
             onClick = onCreateClick,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }

@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SaveMemoRequest(
     val title: String,
-    val content: String
+    val content: String,
 )

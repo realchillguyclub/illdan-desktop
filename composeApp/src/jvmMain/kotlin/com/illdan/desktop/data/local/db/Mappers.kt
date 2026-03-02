@@ -16,7 +16,7 @@ fun TodoEntity.toDomain(): Todo =
         deadline = deadline,
         routineDays = routineDays,
         categoryName = categoryName,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
     )
 
 fun Todo.toEntity(): TodoEntity =
@@ -32,5 +32,5 @@ fun Todo.toEntity(): TodoEntity =
         deadline = deadline,
         routineDays = routineDays,
         categoryName = categoryName,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
     )

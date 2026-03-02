@@ -19,22 +19,23 @@ fun main() {
     initKoin()
 
     application {
-        val windowState = rememberWindowState(
-            size = DpSize(900.dp, 600.dp)
-        )
+        val windowState =
+            rememberWindowState(
+                size = DpSize(900.dp, 600.dp),
+            )
 
         setSingletonImageLoaderFactory { context ->
-            ImageLoader.Builder(context)
+            ImageLoader
+                .Builder(context)
                 .components {
                     add(SvgDecoder.Factory())
-                }
-                .build()
+                }.build()
         }
 
         Window(
             onCloseRequest = ::exitApplication,
             title = "Illdandesktop",
-            state = windowState
+            state = windowState,
         ) {
             LaunchedEffect(Unit) {
                 window.minimumSize = Dimension(600, 400)

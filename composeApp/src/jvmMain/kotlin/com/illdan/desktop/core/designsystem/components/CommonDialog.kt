@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -12,34 +12,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.illdan.desktop.core.design_system.Gray100
+import com.illdan.desktop.core.designsystem.Gray100
 
 @Composable
 fun CommonDialog(
     visible: Boolean,
     content: @Composable () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(),
-            exit = fadeOut()
+            exit = fadeOut(),
         ) {
-            Box(modifier = Modifier.fillMaxSize().background(Gray100.copy(0.35f)).clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onDismiss
-            ))
+            Box(
+                modifier =
+                    Modifier.fillMaxSize().background(Gray100.copy(0.35f)).clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = onDismiss,
+                    ),
+            )
 
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 content()
             }

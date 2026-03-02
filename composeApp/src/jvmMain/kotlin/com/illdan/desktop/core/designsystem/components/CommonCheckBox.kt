@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,19 +26,19 @@ fun CommonCheckBox(
     val haptic = LocalHapticFeedback.current
 
     Box(
-        modifier = Modifier
-            .size(20.dp)
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onCheckedChange(!isChecked)
-            }
-            .background(color = Color.Unspecified, shape = RoundedCornerShape(4.dp)),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .size(20.dp)
+                .clickable {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onCheckedChange(!isChecked)
+                }.background(color = Color.Unspecified, shape = RoundedCornerShape(4.dp)),
+        contentAlignment = Alignment.Center,
     ) {
         Image(
             painter = painterResource(if (isChecked) Res.drawable.ic_checked else Res.drawable.ic_unchecked),
             contentDescription = "",
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(20.dp),
         )
     }
 }

@@ -11,19 +11,19 @@ import com.illdan.desktop.domain.model.category.GroupEmoji
  * · 값만 반환
  * · 결과는 새 Map으로 반환
  * */
-object GroupEmojiResponseMapper: Mapper<GroupEmojiResponse, GroupEmoji> {
-    override fun responseToModel(response: GroupEmojiResponse?): GroupEmoji {
-        return response?.let {
+object GroupEmojiResponseMapper : Mapper<GroupEmojiResponse, GroupEmoji> {
+    override fun responseToModel(response: GroupEmojiResponse?): GroupEmoji =
+        response?.let {
             GroupEmoji(
-                groupEmojis = it.groupEmojis.mapValues { (_, emojis) ->
-                    emojis.map { emoji ->
-                        Emoji(
-                            emojiId = emoji.emojiId,
-                            imageUrl = emoji.imageUrl
-                        )
-                    }
-                }
+                groupEmojis =
+                    it.groupEmojis.mapValues { (_, emojis) ->
+                        emojis.map { emoji ->
+                            Emoji(
+                                emojiId = emoji.emojiId,
+                                imageUrl = emoji.imageUrl,
+                            )
+                        }
+                    },
             )
         } ?: GroupEmoji()
-    }
 }

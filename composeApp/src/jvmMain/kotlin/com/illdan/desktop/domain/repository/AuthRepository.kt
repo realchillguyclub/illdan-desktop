@@ -4,16 +4,22 @@ import com.illdan.desktop.domain.model.auth.AuthInfo
 import com.illdan.desktop.domain.model.auth.AuthTokens
 import com.illdan.desktop.domain.model.auth.AuthUrl
 import com.illdan.desktop.domain.model.request.auth.LoginRequest
-import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
-    suspend fun login(request: LoginRequest): Flow<Result<AuthInfo>>
-    suspend fun getAuthUrl(): Flow<Result<AuthUrl>>
-    suspend fun getAuthInfo(query: String): Flow<Result<AuthInfo>>
+    suspend fun login(request: LoginRequest): Result<AuthInfo>
+
+    suspend fun getAuthUrl(): Result<AuthUrl>
+
+    suspend fun getAuthInfo(query: String): Result<AuthInfo>
+
 //    suspend fun reissueToken(request: ReissueRequestModel): Flow<Result<AuthTokens>>
     suspend fun logout(): Result<Unit>
-    suspend fun saveToken(request: AuthTokens)
-    suspend fun clearToken()
-    suspend fun getLocalToken(): Flow<AuthTokens>
+
+    suspend fun saveToken(request: AuthTokens): Result<Unit>
+
+    suspend fun clearToken(): Result<Unit>
+
+    suspend fun getLocalToken(): AuthTokens
+
     suspend fun getLocalTokenOnce(): AuthTokens?
 }
