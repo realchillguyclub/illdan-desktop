@@ -40,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -124,6 +123,8 @@ fun MainScreen(
         onDeleteMemo = viewModel::deleteMemo,
         onBookmarkClick = viewModel::updateTodoBookmark,
         onCreateCategory = viewModel::createCategory,
+        onEditCategory = viewModel::updateCategory,
+        onCategoryMenuClick = viewModel::updateSelectedCategory,
         onLogout = authViewModel::logout,
     )
 }
@@ -146,6 +147,8 @@ private fun MainContent(
     onDeleteMemo: (Long) -> Unit,
     onBookmarkClick: (Long) -> Unit,
     onCreateCategory: (String, Long) -> Unit,
+    onEditCategory: (String, Long) -> Unit,
+    onCategoryMenuClick: (Long) -> Unit,
     onLogout: () -> Unit,
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
@@ -211,6 +214,10 @@ private fun MainContent(
                     onTodayClicked = onTodayClicked,
                     onAddClicked = { showCategoryDialog = true },
                     onDelete = { showDeleteCategoryDialog = true },
+                    onEdit = {
+                        onCategoryMenuClick(uiState.currentCategory.id)
+                        showCategoryDialog = true
+                    },
                 )
 
                 Column(
@@ -243,9 +250,18 @@ private fun MainContent(
             visible = showCategoryDialog,
             selectedCategory = uiState.selectedCategory,
             groupEmoji = uiState.emojiList,
-            isEdit = false,
-            onDismiss = { showCategoryDialog = false },
-            onCreateClick = onCreateCategory,
+            isEdit = uiState.selectedCategory != null,
+            onDismiss = {
+                showCategoryDialog = false
+                onCategoryMenuClick(-1)
+            },
+            onDone = { name, emojiId ->
+                if (uiState.selectedCategory == null) {
+                    onCreateCategory(name, emojiId)
+                } else {
+                    onEditCategory(name, emojiId)
+                }
+            },
         )
 
         AlertDialog(
@@ -270,6 +286,7 @@ private fun CategoryList(
     onTodayClicked: () -> Unit,
     onAddClicked: () -> Unit,
     onDelete: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
 
@@ -305,7 +322,10 @@ private fun CategoryList(
                             onDelete()
                             isMenuExpanded = false
                         },
-                        onEdit = { isMenuExpanded = false },
+                        onEdit = {
+                            onEdit()
+                            isMenuExpanded = false
+                        },
                         onCategoryMenuClick = { isMenuExpanded = !isMenuExpanded },
                     )
                 }
