@@ -125,6 +125,7 @@ fun MainScreen(
         onCreateCategory = viewModel::createCategory,
         onEditCategory = viewModel::updateCategory,
         onCategoryMenuClick = viewModel::updateSelectedCategory,
+        onDeleteCategory = viewModel::deleteCategory,
         onLogout = authViewModel::logout,
     )
 }
@@ -148,7 +149,8 @@ private fun MainContent(
     onBookmarkClick: (Long) -> Unit,
     onCreateCategory: (String, Long) -> Unit,
     onEditCategory: (String, Long) -> Unit,
-    onCategoryMenuClick: (Long) -> Unit,
+    onCategoryMenuClick: (Long?) -> Unit,
+    onDeleteCategory: () -> Unit,
     onLogout: () -> Unit,
 ) {
     var showCategoryDialog by remember { mutableStateOf(false) }
@@ -253,7 +255,7 @@ private fun MainContent(
             isEdit = uiState.selectedCategory != null,
             onDismiss = {
                 showCategoryDialog = false
-                onCategoryMenuClick(-1)
+                onCategoryMenuClick(null)
             },
             onDone = { name, emojiId ->
                 if (uiState.selectedCategory == null) {
@@ -271,8 +273,14 @@ private fun MainContent(
             positiveText = WORD_CANCEL,
             negativeText = WORD_DELETE,
             onPositiveClick = { showDeleteCategoryDialog = false },
-            onNegativeClick = { showDeleteCategoryDialog = false },
-            onDismiss = { showDeleteCategoryDialog = false },
+            onNegativeClick = {
+                showDeleteCategoryDialog = false
+                onDeleteCategory()
+            },
+            onDismiss = {
+                showDeleteCategoryDialog = false
+                onCategoryMenuClick(null)
+            },
         )
     }
 }
