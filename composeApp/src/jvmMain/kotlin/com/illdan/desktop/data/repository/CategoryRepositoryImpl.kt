@@ -36,4 +36,15 @@ class CategoryRepositoryImpl(
             path = "/category",
             body = request,
         )
+
+    override suspend fun updateCategory(
+        id: Long,
+        name: String,
+        emojiId: Long,
+    ): Result<Unit> =
+        fetch(
+            method = HttpMethod.PUT,
+            path = "/category/$id",
+            body = CreateCategoryRequest(name, emojiId),
+        )
 }

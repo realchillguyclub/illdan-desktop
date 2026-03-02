@@ -10,4 +10,10 @@ interface CategoryRepository {
     suspend fun getEmojiList(): Result<GroupEmoji>
 
     suspend fun createCategory(request: CreateCategoryRequest): Result<Unit>
+
+    suspend fun updateCategory(
+        id: Long,
+        name: String,
+        emojiId: Long,
+    ): Result<Unit>
 }
