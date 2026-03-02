@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.illdan.desktop.core.designsystem.ACTION_CLOSE
 import com.illdan.desktop.core.designsystem.ACTION_CREATE
+import com.illdan.desktop.core.designsystem.ACTION_EDIT
 import com.illdan.desktop.core.designsystem.ADD_CATEGORY_DIALOG_TITLE
 import com.illdan.desktop.core.designsystem.EDIT_CATEGORY_DIALOG_TITLE
 import com.illdan.desktop.core.designsystem.Gray00
@@ -58,7 +59,7 @@ fun CategoryDialog(
     groupEmoji: GroupEmoji,
     isEdit: Boolean = false,
     onDismiss: () -> Unit,
-    onCreateClick: (String, Long) -> Unit,
+    onDone: (String, Long) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var emoji by remember { mutableStateOf(Emoji()) }
@@ -120,10 +121,14 @@ fun CategoryDialog(
                         onEmojiSelected = { emoji = it },
                     )
                     Spacer(Modifier.height(36.dp))
-                    ActionButtons(onCloseClick = onDismiss, onCreateClick = {
-                        onCreateClick(categoryName, emoji.emojiId)
-                        onDismiss()
-                    })
+                    ActionButtons(
+                        isEdit = isEdit,
+                        onClose = onDismiss,
+                        onDone = {
+                            onDone(categoryName, emoji.emojiId)
+                            onDismiss()
+                        },
+                    )
                 }
             }
         },
@@ -259,8 +264,9 @@ private fun EmojiGridItem(
 
 @Composable
 private fun ActionButtons(
-    onCloseClick: () -> Unit,
-    onCreateClick: () -> Unit,
+    isEdit: Boolean = false,
+    onClose: () -> Unit,
+    onDone: () -> Unit,
 ) {
     Row(
         modifier =
@@ -273,15 +279,15 @@ private fun ActionButtons(
             textColor = Gray40,
             textStyle = AppTextStyle.lgMedium,
             buttonColor = Gray90,
-            onClick = onCloseClick,
+            onClick = onClose,
             modifier = Modifier.weight(1f),
         )
 
         Spacer(Modifier.width(10.dp))
 
         AppButton(
-            text = ACTION_CREATE,
-            onClick = onCreateClick,
+            text = if (isEdit) ACTION_EDIT else ACTION_CREATE,
+            onClick = onDone,
             modifier = Modifier.weight(1f),
         )
     }
