@@ -63,7 +63,6 @@ class MainViewModel(
 
     // 카테고리 조회
     private fun getCategoryList() {
-        logger.d { "getCategoryList" }
         launchResult(
             block = { categoryRepository.getCategoryList() },
             onSuccess = { updateState(uiState.value.copy(categoryList = it)) },
@@ -109,7 +108,7 @@ class MainViewModel(
     }
 
     // 메뉴 전용 카테고리 업데이트
-    fun updateSelectedCategory(id: Long) {
+    fun updateSelectedCategory(id: Long?) {
         val category = currentState.categoryList.find { it.id == id }
 
         updateState(uiState.value.copy(selectedCategory = category))
@@ -123,6 +122,21 @@ class MainViewModel(
         launchResult(
             block = { categoryRepository.updateCategory(currentState.currentCategory.id, name, emojiId) },
             onSuccess = { getCategoryList() },
+        )
+    }
+
+    // 카테고리 삭제
+    fun deleteCategory() {
+        val categoryIndex = currentState.categoryList.indexOfFirst { it.id == currentState.currentCategory.id }
+
+        if (categoryIndex == -1) return
+
+        launchResult(
+            block = { categoryRepository.deleteCategory(currentState.currentCategory.id) },
+            onSuccess = {
+                getCategoryList()
+                updateCurrentCategory(categoryIndex - 1)
+            },
         )
     }
 
