@@ -28,9 +28,9 @@ fun AppButton(
         modifier =
             modifier
                 .background(buttonColor, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .clickable { onClick() }
-                .padding(vertical = 15.dp)
-                .clip(RoundedCornerShape(12.dp)),
+                .padding(vertical = 15.dp),
         contentAlignment = Alignment.Center,
     ) {
         AppText(text = text, color = textColor, style = textStyle)
