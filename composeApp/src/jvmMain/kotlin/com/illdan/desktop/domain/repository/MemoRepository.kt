@@ -15,4 +15,6 @@ interface MemoRepository {
         memoId: Long,
         request: SaveMemoRequest,
     ): Result<Pair<Long, String>>
+
+    suspend fun getMemoDetail(memoId: Long): Result<Memo>
 }

@@ -46,4 +46,10 @@ class MemoRepositoryImpl(
             body = request,
             mapper = ModifiedMemoResponseMapper,
         )
+
+    override suspend fun getMemoDetail(memoId: Long): Result<Memo> =
+        fetch(
+            method = HttpMethod.GET,
+            path = "/notes/$memoId",
+        )
 }

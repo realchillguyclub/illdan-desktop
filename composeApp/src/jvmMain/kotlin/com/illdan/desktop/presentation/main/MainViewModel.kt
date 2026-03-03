@@ -378,7 +378,8 @@ class MainViewModel(
         if (memo == null) {
             updateState(uiState.value.copy(selectedMemo = emptyMemo))
         } else {
-            updateState(uiState.value.copy(selectedMemo = memo))
+            getMemoDetail(id)
+//            updateState(uiState.value.copy(selectedMemo = memo))
         }
     }
 
@@ -415,6 +416,14 @@ class MainViewModel(
     private fun onFailureDeleteMemo(e: Throwable) {
         logger.e { "메모 삭제 실패: ${e.message}" }
         getMemoList()
+    }
+
+    // 메모 상세 조회
+    fun getMemoDetail(memoId: Long) {
+        launchResult(
+            block = { memoRepository.getMemoDetail(memoId = memoId) },
+            onSuccess = { updateState(uiState.value.copy(selectedMemo = it)) },
+        )
     }
 
     /**---------------------------------------------기타 상태 처리----------------------------------------------*/
