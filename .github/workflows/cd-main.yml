@@ -47,10 +47,18 @@ jobs:
         shell: pwsh
         run: .\gradlew.bat :composeApp:packageMsi --stacktrace
 
-      - name: Upload artifacts
+      - name: Upload artifacts (macOS)
+        if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}
+          name: dist-macos
           path: |
             composeApp/build/compose/binaries/main/dmg/**
+      
+      - name: Upload artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-windows
+          path: |
             composeApp/build/compose/binaries/main/msi/**
