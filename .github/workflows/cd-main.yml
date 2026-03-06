@@ -41,11 +41,15 @@ jobs:
       - name: Package (macOS - DMG)
         if: matrix.os == 'macos-latest'
         run: ./gradlew :composeApp:packageDmg --stacktrace
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
 
       - name: Package (Windows - MSI)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: .\gradlew.bat :composeApp:packageMsi --stacktrace
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
 
       - name: Upload artifacts (macOS)
         if: matrix.os == 'macos-latest'
