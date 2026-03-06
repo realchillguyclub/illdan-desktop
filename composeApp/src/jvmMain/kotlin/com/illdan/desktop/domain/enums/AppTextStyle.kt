@@ -49,5 +49,5 @@ enum class AppTextStyle {
     // CALENDAR
     calSemiBold,
     calMedium,
-    calRegular
+    calRegular,
 }

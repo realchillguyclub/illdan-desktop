@@ -16,5 +16,5 @@ data class TodayResponse(
     val deadline: String?,
     val routineDays: List<String>?,
     val categoryName: String?,
-    val imageUrl: String?
+    val imageUrl: String?,
 )

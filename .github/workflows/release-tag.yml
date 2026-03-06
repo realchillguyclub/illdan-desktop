@@ -1,0 +1,96 @@
+name: Release - Build & Publish on tag
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install WiX (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: choco install wixtoolset -y
+
+      - name: Grant execute permission for gradlew (macOS)
+        if: matrix.os == 'macos-latest'
+        run: chmod +x ./gradlew
+
+      - name: Package (macOS - DMG)
+        if: matrix.os == 'macos-latest'
+        run: ./gradlew :composeApp:packageDmg --stacktrace
+
+      - name: Package (Windows - MSI)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: .\gradlew.bat :composeApp:packageMsi --stacktrace
+
+      - name: Upload packaged files (macOS)
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-macos
+          path: |
+            composeApp/build/compose/binaries/main/dmg/**
+
+      - name: Upload packaged files (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-windows
+          path: |
+            composeApp/build/compose/binaries/main/msi/**
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pkg-macos
+          path: release_files
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pkg-windows
+          path: release_files
+
+      - name: List release files
+        shell: bash
+        run: |
+          ls -al release_files
+          find release_files -type f -maxdepth 4 -print
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release_files/**/*.dmg
+            release_files/**/*.msi
+          generate_release_notes: true

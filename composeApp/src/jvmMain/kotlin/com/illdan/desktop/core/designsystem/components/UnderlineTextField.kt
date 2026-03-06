@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,11 +27,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.illdan.desktop.core.design_system.AppTypo
-import com.illdan.desktop.core.design_system.Gray00
-import com.illdan.desktop.core.design_system.Gray60
-import com.illdan.desktop.core.design_system.Gray90
-import com.illdan.desktop.core.design_system.Gray95
+import com.illdan.desktop.core.designsystem.AppTypo
+import com.illdan.desktop.core.designsystem.Gray00
+import com.illdan.desktop.core.designsystem.Gray60
+import com.illdan.desktop.core.designsystem.Gray90
+import com.illdan.desktop.core.designsystem.Gray95
 import com.illdan.desktop.domain.enums.AppTextStyle
 
 @Composable
@@ -48,37 +48,41 @@ fun UnderlineTextField(
     singleLine: Boolean = true,
     readOnly: Boolean = false,
     onClickWhenReadOnly: () -> Unit = {},
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
-        keyboardType = KeyboardType.Text
-    ),
-    keyboardActions: KeyboardActions = KeyboardActions.Default
+    keyboardOptions: KeyboardOptions =
+        KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+        ),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     val focusRequester = remember { FocusRequester() }
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
-        modifier = modifier
-            .background(color = backgroundColor)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                enabled = enabled,
-                onClick = {
-                    if (readOnly) onClickWhenReadOnly()
-                    else focusRequester.requestFocus()
-                }
-            )
-            .padding(contentPadding),
-        contentAlignment = Alignment.CenterStart
+        modifier =
+            modifier
+                .background(color = backgroundColor)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    enabled = enabled,
+                    onClick = {
+                        if (readOnly) {
+                            onClickWhenReadOnly()
+                        } else {
+                            focusRequester.requestFocus()
+                        }
+                    },
+                ).padding(contentPadding),
+        contentAlignment = Alignment.CenterStart,
     ) {
         Row(
             modifier = Modifier.defaultMinSize(minHeight = 40.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
                 modifier = modifier.weight(1f),
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Spacer(Modifier.height(6.dp))
 
@@ -88,7 +92,7 @@ fun UnderlineTextField(
                             text = placeholder,
                             color = Gray60,
                             style = AppTextStyle.mdRegular,
-                            maxLines = maxLines
+                            maxLines = maxLines,
                         )
                     }
 
@@ -102,7 +106,7 @@ fun UnderlineTextField(
                         keyboardActions = keyboardActions,
                         cursorBrush = SolidColor(Gray00),
                         readOnly = readOnly,
-                        modifier = Modifier.focusRequester(focusRequester)
+                        modifier = Modifier.focusRequester(focusRequester),
                     )
                 }
 

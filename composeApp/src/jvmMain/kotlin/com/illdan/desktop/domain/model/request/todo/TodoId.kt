@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TodoId(
-    val todoId: Long
+    val todoId: Long,
 )

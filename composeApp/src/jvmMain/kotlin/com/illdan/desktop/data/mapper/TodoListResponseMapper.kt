@@ -4,9 +4,9 @@ import com.illdan.desktop.core.network.base.Mapper
 import com.illdan.desktop.data.model.response.todo.TodoListResponse
 import com.illdan.desktop.domain.model.todo.Todo
 
-object TodoListResponseMapper: Mapper<TodoListResponse, List<Todo>> {
-    override fun responseToModel(response: TodoListResponse?): List<Todo> {
-        return response?.backlogs?.let { list ->
+object TodoListResponseMapper : Mapper<TodoListResponse, List<Todo>> {
+    override fun responseToModel(response: TodoListResponse?): List<Todo> =
+        response?.backlogs?.let { list ->
             list.map {
                 Todo(
                     todoId = it.todoId,
@@ -18,9 +18,8 @@ object TodoListResponseMapper: Mapper<TodoListResponse, List<Todo>> {
                     deadline = it.deadline ?: "",
                     routineDays = it.routineDays ?: emptyList(),
                     categoryName = it.categoryName ?: "",
-                    imageUrl = it.imageUrl ?: ""
+                    imageUrl = it.imageUrl ?: "",
                 )
             }
         } ?: emptyList()
-    }
 }

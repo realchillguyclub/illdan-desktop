@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TodayListResponse(
     val date: String = "",
-    val todays: List<TodayResponse> = emptyList()
+    val todays: List<TodayResponse> = emptyList(),
 )

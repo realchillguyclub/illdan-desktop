@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MemoListResponse(
-    val notes: List<MemoResponse>
+    val notes: List<MemoResponse>,
 )

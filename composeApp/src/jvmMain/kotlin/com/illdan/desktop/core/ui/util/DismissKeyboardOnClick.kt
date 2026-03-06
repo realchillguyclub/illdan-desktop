@@ -12,21 +12,22 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 @Composable
 fun DismissKeyboardOnClick(
     callback: () -> Unit = {},
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    focusManager.clearFocus()
-                    keyboardController?.hide()
-                    callback()
-                })
-            }
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        callback()
+                    })
+                },
     ) {
         content()
     }

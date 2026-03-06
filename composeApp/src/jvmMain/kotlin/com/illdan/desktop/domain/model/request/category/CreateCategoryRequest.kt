@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateCategoryRequest(
     val name: String,
-    val emojiId: Long
+    val emojiId: Long,
 )

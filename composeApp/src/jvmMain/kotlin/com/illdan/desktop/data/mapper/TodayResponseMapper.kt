@@ -4,9 +4,9 @@ import com.illdan.desktop.core.network.base.Mapper
 import com.illdan.desktop.data.model.response.today.TodayResponse
 import com.illdan.desktop.domain.model.todo.Todo
 
-object TodayResponseMapper: Mapper<TodayResponse, Todo> {
-    override fun responseToModel(response: TodayResponse?): Todo {
-        return response?.let {
+object TodayResponseMapper : Mapper<TodayResponse, Todo> {
+    override fun responseToModel(response: TodayResponse?): Todo =
+        response?.let {
             Todo(
                 todoId = it.todoId,
                 content = it.content,
@@ -19,8 +19,7 @@ object TodayResponseMapper: Mapper<TodayResponse, Todo> {
                 deadline = it.deadline ?: "",
                 routineDays = it.routineDays ?: emptyList(),
                 categoryName = it.categoryName ?: "",
-                imageUrl = it.imageUrl ?: ""
+                imageUrl = it.imageUrl ?: "",
             )
         } ?: Todo()
-    }
 }

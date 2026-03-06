@@ -10,53 +10,46 @@ import com.illdan.desktop.domain.model.memo.Memo
 import com.illdan.desktop.domain.model.memo.MemoId
 import com.illdan.desktop.domain.model.request.memo.SaveMemoRequest
 import com.illdan.desktop.domain.repository.MemoRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 class MemoRepositoryImpl(
-    private val networkClient: NetworkClient
-): MemoRepository, BaseRepository(networkClient) {
-    override suspend fun saveMemo(request: SaveMemoRequest): Flow<Result<MemoId>> = flow {
-        emit(
-            fetchMapped(
-                method = HttpMethod.POST,
-                path = "/notes",
-                body = request,
-                mapper = MemoIdResponseMapper
-            )
+    private val networkClient: NetworkClient,
+) : BaseRepository(networkClient),
+    MemoRepository {
+    override suspend fun saveMemo(request: SaveMemoRequest): Result<MemoId> =
+        fetchMapped(
+            method = HttpMethod.POST,
+            path = "/notes",
+            body = request,
+            mapper = MemoIdResponseMapper,
         )
-    }
 
-    override suspend fun getMemoList(): Flow<Result<List<Memo>>> = flow {
-        emit(
-            fetchMapped(
-                method = HttpMethod.GET,
-                path = "/notes",
-                mapper = MemoListResponseMapper
-            )
+    override suspend fun getMemoList(): Result<List<Memo>> =
+        fetchMapped(
+            method = HttpMethod.GET,
+            path = "/notes",
+            mapper = MemoListResponseMapper,
         )
-    }
 
-    override suspend fun deleteMemo(memoId: Long): Flow<Result<Unit>> = flow {
-        emit(
-            fetch(
-                method = HttpMethod.DELETE,
-                path = "/notes/$memoId"
-            )
+    override suspend fun deleteMemo(memoId: Long): Result<Unit> =
+        fetch(
+            method = HttpMethod.DELETE,
+            path = "/notes/$memoId",
         )
-    }
 
     override suspend fun updateMemo(
         memoId: Long,
-        request: SaveMemoRequest
-    ): Flow<Result<Pair<Long, String>>> = flow {
-        emit(
-            fetchMapped(
-                method = HttpMethod.PUT,
-                path = "/notes/$memoId",
-                body = request,
-                mapper = ModifiedMemoResponseMapper
-            )
+        request: SaveMemoRequest,
+    ): Result<Pair<Long, String>> =
+        fetchMapped(
+            method = HttpMethod.PUT,
+            path = "/notes/$memoId",
+            body = request,
+            mapper = ModifiedMemoResponseMapper,
         )
-    }
+
+    override suspend fun getMemoDetail(memoId: Long): Result<Memo> =
+        fetch(
+            method = HttpMethod.GET,
+            path = "/notes/$memoId",
+        )
 }

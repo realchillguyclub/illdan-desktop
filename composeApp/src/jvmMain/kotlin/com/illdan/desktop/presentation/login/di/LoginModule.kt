@@ -6,7 +6,8 @@ import com.illdan.desktop.presentation.login.navigation.AuthNavGraph
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-val loginModule = module {
-    single<NavGraphContributor> { AuthNavGraph }
-    viewModelOf(::AuthViewModel)
-}
+val loginModule =
+    module {
+        single<NavGraphContributor> { AuthNavGraph }
+        viewModelOf(::AuthViewModel)
+    }

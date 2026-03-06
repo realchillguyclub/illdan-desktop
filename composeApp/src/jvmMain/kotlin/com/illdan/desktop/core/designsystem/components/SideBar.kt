@@ -1,4 +1,4 @@
-package com.illdan.desktop.core.design_system.components
+package com.illdan.desktop.core.designsystem.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,13 +27,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
-import com.illdan.desktop.core.design_system.CHECK_VERSION
-import com.illdan.desktop.core.design_system.Gray10
-import com.illdan.desktop.core.design_system.Gray100
-import com.illdan.desktop.core.design_system.Gray95
-import com.illdan.desktop.core.design_system.WORD_LOGOUT
+import com.illdan.desktop.core.designsystem.CHECK_VERSION
+import com.illdan.desktop.core.designsystem.Gray10
+import com.illdan.desktop.core.designsystem.Gray100
+import com.illdan.desktop.core.designsystem.Gray95
+import com.illdan.desktop.core.designsystem.WORD_LOGOUT
 import com.illdan.desktop.domain.enums.AppTextStyle
 import com.illdan.desktop.domain.enums.MenuType
 import illdandesktop.composeapp.generated.resources.Res
@@ -47,24 +44,28 @@ import org.jetbrains.compose.resources.painterResource
 fun SideBar(
     onAllTodoClick: () -> Unit,
     onMemoClick: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
 ) {
     var selectedMenu by remember { mutableStateOf(MenuType.ALL) }
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .width(64.dp)
-            .fillMaxHeight()
-            .background(Gray100)
-            .padding(horizontal = 12.dp)
-            .padding(top = 24.dp, bottom = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .width(64.dp)
+                .fillMaxHeight()
+                .background(Gray100)
+                .padding(horizontal = 12.dp)
+                .padding(top = 24.dp, bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         SideBarMenuItem(
             icon = painterResource(Res.drawable.ic_all),
             isSelected = selectedMenu == MenuType.ALL,
-            onClick = { selectedMenu = MenuType.ALL; onAllTodoClick() }
+            onClick = {
+                selectedMenu = MenuType.ALL
+                onAllTodoClick()
+            },
         )
         Spacer(Modifier.height(12.dp))
         SideBarMenuItem(
@@ -73,7 +74,7 @@ fun SideBar(
             onClick = {
                 selectedMenu = if (selectedMenu == MenuType.NOTE) MenuType.ALL else MenuType.NOTE
                 onMemoClick()
-            }
+            },
         )
         Spacer(Modifier.weight(1f))
         SideBarMenuItem(
@@ -82,7 +83,7 @@ fun SideBar(
             showDialog = showSettingsDialog,
             onClick = { showSettingsDialog = !showSettingsDialog },
             onDismiss = { showSettingsDialog = false },
-            onLogout = onLogout
+            onLogout = onLogout,
         )
     }
 }
@@ -95,19 +96,20 @@ private fun SideBarMenuItem(
     onClick: () -> Unit,
     onDismiss: () -> Unit = {},
     onCheckUpdate: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
 ) {
     Box {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(if (isSelected) Gray95 else Gray100, RoundedCornerShape(12.dp))
-                .clip(RoundedCornerShape(12.dp))
-                .clickable{ onClick() }
-                .height(40.dp)
-                .padding(vertical = 8.dp)
-                .padding(start = 8.dp, end = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(if (isSelected) Gray95 else Gray100, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onClick() }
+                    .height(40.dp)
+                    .padding(vertical = 8.dp)
+                    .padding(start = 8.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(painter = icon, contentDescription = null, modifier = Modifier.size(24.dp))
         }
@@ -116,7 +118,7 @@ private fun SideBarMenuItem(
             show = showDialog,
             onDismiss = onDismiss,
             onCheckUpdate = onCheckUpdate,
-            onLogout = onLogout
+            onLogout = onLogout,
         )
     }
 }
@@ -134,20 +136,26 @@ fun SettingsMenuPopup(
         alignment = Alignment.TopStart,
         offset = IntOffset(x = 108, y = -120),
         containerColor = Gray100,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
     ) {
         Column(
             modifier = Modifier.widthIn(max = 160.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             MenuItem(
                 text = CHECK_VERSION,
-                onClick = { onCheckUpdate(); onDismiss() }
+                onClick = {
+                    onCheckUpdate()
+                    onDismiss()
+                },
             )
             HorizontalDivider(color = Gray95, thickness = 1.dp)
             MenuItem(
                 text = WORD_LOGOUT,
-                onClick = { onLogout(); onDismiss() }
+                onClick = {
+                    onLogout()
+                    onDismiss()
+                },
             )
         }
     }
@@ -156,19 +164,20 @@ fun SettingsMenuPopup(
 @Composable
 private fun MenuItem(
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
     ) {
         AppText(
             text = text,
             style = AppTextStyle.mdMedium,
-            color = Gray10
+            color = Gray10,
         )
     }
 }

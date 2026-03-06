@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GroupEmojiResponse(
-    val groupEmojis: Map<String, List<EmojiResponse>>
+    val groupEmojis: Map<String, List<EmojiResponse>>,
 )

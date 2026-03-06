@@ -18,90 +18,71 @@ import kotlinx.coroutines.flow.flow
 
 class TodoRepositoryImpl(
     private val networkClient: NetworkClient,
-    private val dataSource: TodoLocalDataSource
-): TodoRepository, BaseRepository(networkClient) {
-    override suspend fun getTodayList(): Flow<Result<TodayListInfo>> = flow {
-        emit(
-            fetchMapped(
-                HttpMethod.GET,
-                path = "/todays",
-                query = mapOf(
+    private val dataSource: TodoLocalDataSource,
+) : BaseRepository(networkClient),
+    TodoRepository {
+    override suspend fun getTodayList(): Result<TodayListInfo> =
+        fetchMapped(
+            HttpMethod.GET,
+            path = "/todays",
+            query =
+                mapOf(
                     "page" to "0",
-                    "size" to "200"
+                    "size" to "200",
                 ),
-                mapper = TodayListResponseMapper
-            )
+            mapper = TodayListResponseMapper,
         )
-    }
 
-    override suspend fun getTodoList(request: GetTodoListRequest): Flow<Result<List<Todo>>> = flow {
-        emit(
-            fetchMapped(
-                method = HttpMethod.GET,
-                path = "/backlogs",
-                query = mapOf(
+    override suspend fun getTodoList(request: GetTodoListRequest): Result<List<Todo>> =
+        fetchMapped(
+            method = HttpMethod.GET,
+            path = "/backlogs",
+            query =
+                mapOf(
                     "category" to "${request.categoryId}",
                     "page" to "0",
-                    "size" to "200"
+                    "size" to "200",
                 ),
-                mapper = TodoListResponseMapper
-            )
+            mapper = TodoListResponseMapper,
         )
-    }
 
-    override suspend fun createTodo(request: CreateTodoRequest): Flow<Result<Unit>> = flow {
-        emit(
-            fetch(
-                method = HttpMethod.POST,
-                path = "/backlog",
-                body = request
-            )
+    override suspend fun createTodo(request: CreateTodoRequest): Result<Unit> =
+        fetch(
+            method = HttpMethod.POST,
+            path = "/backlog",
+            body = request,
         )
-    }
 
-    override suspend fun swipeTodo(request: TodoId): Flow<Result<Unit>> = flow {
-        emit(
-            fetch(
-                method = HttpMethod.PATCH,
-                path = "/swipe",
-                body = request
-            )
+    override suspend fun swipeTodo(request: TodoId): Result<Unit> =
+        fetch(
+            method = HttpMethod.PATCH,
+            path = "/swipe",
+            body = request,
         )
-    }
 
-    override suspend fun reorderTodoList(request: ReorderTodoListRequest): Flow<Result<Unit>> = flow {
-        emit(
-            fetch(
-                method = HttpMethod.PATCH,
-                path = "/todo/dragAndDrop",
-                body = request
-            )
+    override suspend fun reorderTodoList(request: ReorderTodoListRequest): Result<Unit> =
+        fetch(
+            method = HttpMethod.PATCH,
+            path = "/todo/dragAndDrop",
+            body = request,
         )
-    }
 
-    override suspend fun updateTodoStatus(todoId: Long): Flow<Result<Unit>> = flow {
-        emit(
-            fetch(
-                method = HttpMethod.PATCH,
-                path = "/todo/${todoId}/achieve",
-            )
+    override suspend fun updateTodoStatus(todoId: Long): Result<Unit> =
+        fetch(
+            method = HttpMethod.PATCH,
+            path = "/todo/$todoId/achieve",
         )
-    }
 
-    override suspend fun updateTodoBookmark(todoId: Long): Flow<Result<Unit>> = flow {
-        emit(
-            fetch(
-                method = HttpMethod.PATCH,
-                path = "/todo/${todoId}/bookmark"
-            )
+    override suspend fun updateTodoBookmark(todoId: Long): Result<Unit> =
+        fetch(
+            method = HttpMethod.PATCH,
+            path = "/todo/$todoId/bookmark",
         )
-    }
 
-    override suspend fun createLocalTodo(todo: Todo): Flow<Result<Unit>> = flow {
-        dataSource.upsert(todo)
-    }
+    override suspend fun createLocalTodo(todo: Todo): Flow<Result<Unit>> =
+        flow {
+            dataSource.upsert(todo)
+        }
 
-    override suspend fun deleteTodo(todoId: Long): Result<Unit> {
-        return fetch(method = HttpMethod.DELETE, path = "/todo/$todoId")
-    }
+    override suspend fun deleteTodo(todoId: Long): Result<Unit> = fetch(method = HttpMethod.DELETE, path = "/todo/$todoId")
 }

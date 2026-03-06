@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateTodoRequest(
     val content: String,
-    val categoryId: Long
+    val categoryId: Long,
 )

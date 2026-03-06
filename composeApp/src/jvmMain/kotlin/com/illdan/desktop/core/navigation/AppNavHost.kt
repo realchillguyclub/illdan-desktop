@@ -18,12 +18,15 @@ import org.koin.compose.getKoin
 fun AppNavHost() {
     val navController = rememberNavController()
     val koin = getKoin()
-    val contributors = remember { // remember로 재구성 시 새로운 객체 생성 방지
-        koin.getAll<NavGraphContributor>().sortedBy { it.priority }
-    }
-    val start = contributors
-        .firstOrNull { it.graphRoute == NavRoutes.MainGraph }
-        ?: error("해당 Graph를 찾을 수 없습니다.")
+    val contributors =
+        remember {
+            // remember로 재구성 시 새로운 객체 생성 방지
+            koin.getAll<NavGraphContributor>().sortedBy { it.priority }
+        }
+    val start =
+        contributors
+            .firstOrNull { it.graphRoute == NavRoutes.MainGraph }
+            ?: error("해당 Graph를 찾을 수 없습니다.")
     val duration = 300
     val easing = tween<IntOffset>(durationMillis = duration)
 
@@ -39,27 +42,27 @@ fun AppNavHost() {
         enterTransition = {
             slideInHorizontally(
                 initialOffsetX = { full -> full },
-                animationSpec = easing
+                animationSpec = easing,
             ) + fadeIn(animationSpec = tween(duration))
         },
         exitTransition = {
             slideOutHorizontally(
                 targetOffsetX = { full -> -full / 4 },
-                animationSpec = easing
+                animationSpec = easing,
             ) + fadeOut(animationSpec = tween((duration * 0.8).toInt()))
         },
         popEnterTransition = {
             slideInHorizontally(
                 initialOffsetX = { full -> -full / 4 },
-                animationSpec = easing
+                animationSpec = easing,
             ) + fadeIn(animationSpec = tween((duration * 0.8).toInt()))
         },
         popExitTransition = {
             slideOutHorizontally(
                 targetOffsetX = { full -> full },
-                animationSpec = easing
+                animationSpec = easing,
             ) + fadeOut(animationSpec = tween(duration))
-        }
+        },
     ) {
         contributors.forEach { with(it) { registerGraph(navController) } }
     }

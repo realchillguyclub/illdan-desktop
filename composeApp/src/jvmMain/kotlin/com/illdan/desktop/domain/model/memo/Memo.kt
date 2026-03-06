@@ -7,5 +7,5 @@ data class Memo(
     val noteId: Long = -1L,
     val title: String = "",
     val content: String = "",
-    val modifyDate: String = ""
+    val modifyDate: String = "",
 )
